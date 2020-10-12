@@ -1,0 +1,15 @@
+{
+  "name": "boolean-expression-tree-evaluator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.dell.com:koa/pricing/tools/boolean-expression-tree-evaluator.git"
+  },
+  "author": "Benjamin Adams",
+  "license": "ISC"
+}
