@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha tests/dnfTests.js"
   },
   "repository": {
     "type": "git",
     "url": "git@gitlab.dell.com:koa/pricing/tools/boolean-expression-tree-evaluator.git"
   },
   "author": "Benjamin Adams",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^8.1.3"
+  }
 }
