@@ -1,5 +1,5 @@
 
-const firstSplitRegex = /(AND|OR|\(|\))/g
+const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
 const validEqualityChars = ['==', '!=', '⊃⊃', '!⊃']
 const placeholders = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
@@ -87,9 +87,9 @@ function prepareTokens(input) {
     let nonExprCharHolder = ''
 
     for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i] == 'AND') {
+        if (tokens[i] == 'AND' || tokens[i] == 'and') {
             tokens[i] = '&&'
-        } else if (tokens[i] == 'OR') {
+        } else if (tokens[i] == 'OR' || tokens[i] == 'or') {
             tokens[i] = '||'
         }
 

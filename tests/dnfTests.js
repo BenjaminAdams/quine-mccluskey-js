@@ -49,9 +49,15 @@ describe('toDnf', function () {
         assert.strictEqual(true, true);
     });
 
-    it('should simplify to !B', function () {
-        let res = toDnf('component.id==abc or (component.id⊃⊃def and (classification.family==g8 or classification.family==X1))')
-        assert.strictEqual(true, true);
+    it('should simplify to !B', function (done) {
+        //let inputStr = 'component.id==abc or (component.id⊃⊃def and (classification.family==g8 or classification.family==X1))'
+        let inputStr = 'component.id==abc or (component.id!=def and (classification.family==g8 or classification.family==X1))'
+        let res = toDnf(inputStr)
+        callPython(inputStr, function (data) {
+            // assert.strictEqual(data[0], 'And(component.id==abc)')
+            assert.strictEqual(data.length, 1)
+            done()
+        })
     });
 
     it('One condition', function (done) {
