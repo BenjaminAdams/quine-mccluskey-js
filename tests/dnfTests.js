@@ -1,20 +1,18 @@
 process.env.DEBUG = true
 const assert = require('assert')
 var toDnf = require('../index.js')
-
 const spawn = require("child_process").spawn
 
 function callPython(inputStr, cb) {
     const pythonProcess = spawn('py', ["tests/runExpr.py", inputStr]);
     pythonProcess.stdout.on('data', function (data) {
-        console.log(data.toString())
-        var tmp = data.toString().replace('\r\n', '').replace(/'/g, '"')
+        console.log('python result=', data.toString())
         cb(JSON.parse(data.toString().replace('\r\n', '').replace(/'/g, '"')))
     });
 }
 
 describe('toDnf', function () {
-    this.timeout(90000)
+    this.timeout(50000)
 
     it('invalid input, expect empty array', function () {
         let res = toDnf('x=5')  //not enough chars, it needs to be x==5
@@ -41,18 +39,18 @@ describe('toDnf', function () {
 
     });
 
-    it('jibberish containing AND/OR valid tokens, expect error', function () {
+    it('jibberish containing and /or valid tokens, expect error', function () {
         let res = toDnf('component.id23g23g23gabc')
         assert.strictEqual(res.length, 0)
     });
 
     it('Andrews first example in the excel document', function () {
-        let res = toDnf('component.id==abc OR (component.id!=def AND (classification.family==g8 OR classification.family==X1))')
+        let res = toDnf('component.id==abc or (component.id!=def and (classification.family==g8 or classification.family==X1))')
         assert.strictEqual(true, true);
     });
 
     it('should simplify to !B', function () {
-        let res = toDnf('component.id==abc OR (component.id⊃⊃def AND (classification.family==g8 OR classification.family==X1))')
+        let res = toDnf('component.id==abc or (component.id⊃⊃def and (classification.family==g8 or classification.family==X1))')
         assert.strictEqual(true, true);
     });
 
@@ -70,14 +68,14 @@ describe('toDnf', function () {
 
 
     it('Two conditions (and)', function () {
-        let res = toDnf('classification.family==g8 AND component.id==abc')
+        let res = toDnf('classification.family==g8 and component.id==abc')
         assert.strictEqual(res[0], 'And(classification.family==g8,component.id==abc)')
         assert.strictEqual(res.length, 1)
     });
 
 
     it('Two conditions (or)', function () {
-        let res = toDnf('classification.family==g8 OR component.id==abc')
+        let res = toDnf('classification.family==g8 or component.id==abc')
         assert.strictEqual(res[0], 'And(classification.family==g8,component.id==abc)')
         assert.strictEqual(res[1], 'And(classification.family!=g8,component.id==abc)')
         assert.strictEqual(res[2], 'And(classification.family==g8,component.id!=abc)')
@@ -85,7 +83,7 @@ describe('toDnf', function () {
     });
 
     it('Two conditions (and) with crazy, but correct syntax', function () {
-        let res = toDnf('(((classification.family==g8)) OR ((component.id==abc)))')
+        let res = toDnf('(((classification.family==g8)) or ((component.id==abc)))')
         assert.strictEqual(res[0], 'And(classification.family==g8,component.id==abc)')
         assert.strictEqual(res[1], 'And(classification.family!=g8,component.id==abc)')
         assert.strictEqual(res[2], 'And(classification.family==g8,component.id!=abc)')
