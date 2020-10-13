@@ -1,13 +1,17 @@
 
 const firstSplitRegex = /(AND|OR|\(|\))/g
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
+const validEqualityChars = ['==', '!=', '⊃⊃', '!⊃']
 const placeholders = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
 let placeholderIndex = -1
 let expDict = {}
-const DEBUG = true
+const DEBUG = process.env.DEBUG === 'true'
 
 
 function toDnf(input) {
+    if (!input || input.length < 4) {
+        return []
+    }
     let tokens = prepareTokens(input)
     let trueTokenSets = findTrueTokens(tokens)
     let result = createAndConditions(trueTokenSets)
@@ -69,7 +73,7 @@ function evalTokens(tokens) {
         evalStatement += tokens[i].currentValue
         evalStatement += tokens[i].rhSideChars
     }
-    console.log(evalStatement, eval(evalStatement))
+    console.log(evalStatement, '==', eval(evalStatement))
     return eval(evalStatement)
 }
 
@@ -77,9 +81,9 @@ function prepareTokens(input) {
     console.log(input)
 
     let tokens = input.replace(/\s/g, '').split(firstSplitRegex)
-        .filter(x => x !== '')  //todo find better regex pattern that does not leave empty spaces as tokens so we can avoid .filter()
+        .filter(x => x !== '')  //todo maybe find a better regex pattern that does not leave empty spaces as tokens so we can avoid .filter()
 
-    let newTokens = []
+    let objTokens = []
     let nonExprCharHolder = ''
 
     for (let i = 0; i < tokens.length; i++) {
@@ -92,19 +96,22 @@ function prepareTokens(input) {
         if (!isExpression(tokens[i])) {
             nonExprCharHolder += tokens[i]
         } else if (isExpression(tokens[i])) {
+            if (tokens[i].includes(validEqualityChars)) {
+                throw `token should contain a valid equality character token: ${tokens[i]} must be ${validEqualityChars.join()}`
+            }
             var currentPlaceholder = getNextPlaceholder()
             expDict[currentPlaceholder] = tokens[i]
-            newTokens.push(replaceExprWithObj(tokens[i], currentPlaceholder, nonExprCharHolder))
+            objTokens.push(replaceExprWithObj(tokens[i], currentPlaceholder, nonExprCharHolder))
             nonExprCharHolder = ''
         }
     }
 
-    //make any leftover characters the value of the last token.rhSideChars
-    if (nonExprCharHolder !== '' && newTokens.length > 0) {
-        newTokens[newTokens.length - 1].rhSideChars = nonExprCharHolder
+    //make any leftover characters the value of the last elements token.rhSideChars
+    if (nonExprCharHolder !== '' && objTokens.length > 0) {
+        objTokens[objTokens.length - 1].rhSideChars = nonExprCharHolder
     }
 
-    return newTokens
+    return objTokens
 }
 
 function replaceExprWithObj(token, currentPlaceholder, nonExprHolder) {
@@ -175,23 +182,12 @@ function getNextPlaceholder() {
     return placeholders[placeholderIndex]
 }
 
-/*1 - split by OR, AND, (, ) -> get array of values					
-2 - trim all values in the array					
-3 - Build dictionary by expression (no duplicates)					{'component.id==abc': 'A', 'component.id⊃⊃def': 'B'…}
-4 - Replace original strings with variables using dict 3					string.replace
-5 - Replace operators: 			or->||, and->&&		
-6 - WORKING FORMULA: 			A || (B && (C || D))		
-                	
-n - Replace relations operators for negation:					`== -> !=
-                    != -> ==
-                    ⊃⊃ -> !⊃
-                    !⊃ -> ⊃⊃
-                    */
 
 if (!DEBUG) {
     console = console || {};
     console.log = function () { };
     console.table = function () { };
+
 }
 
 module.exports = toDnf
