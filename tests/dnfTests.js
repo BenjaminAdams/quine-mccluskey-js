@@ -1,80 +1,27 @@
 process.env.DEBUG = true
 const assert = require('assert');
-const { promises } = require('fs');
-var toDnf = require('../index.js')
-const spawn = require("child_process").spawn
-
-async function callPython(inputStr) {
-    const pythonProcess = spawn('py', ["tests/runExpr.py", inputStr]);
-    return new Promise((resolve, reject) => {
-        pythonProcess.stdout.on('data', function (data) {
-            console.log('python result=', data.toString())
-            resolve(JSON.parse(data.toString().replace('\r\n', '').replace(/'/g, '"')))
-        });
-
-        pythonProcess.stderr.on('error', function (data) {
-            console.log('python result=', data.toString())
-            reject(data.toString())
-        });
-        pythonProcess.stderr.on('data', function (data) {
-            console.log('python result=', data.toString())
-            reject(data.toString())
-        });
-
-        pythonProcess.on('error', function (data) {
-            console.log('python result=', data.toString())
-            reject(data.toString())
-        });
-    });
-}
+const callPython = require('./python/callPython.js')
+const toDnf = require('../index.js')
 
 describe('toDnf', function () {
     this.timeout(50000)
 
-    it('invalid input, expect empty array', function () {
-        let res = toDnf('x=5')  //not enough chars, it needs to be x==5
-        assert.strictEqual(res.length, 0)
+    it('invalid input, expect empty array', async function () {
+        let inputStr = 'x=5' //not enough chars, it needs to be x==5
+        let res = toDnf(inputStr)
+        assert.strictEqual(res[0], 'x=5')
+
+        let pythonRes = await callPython(inputStr)
+        assert.strictEqual(pythonRes[0], 'x=5')
     });
 
-    it('null/empty input, expect empty array', async function () {
-        let res = toDnf(null)
-        assert.strictEqual(res[0], 'null')
-        try {
-            res = toDnf('')
-            assert.fail('it should have thrown an exception')
-        } catch (ex) {
-
-        }
-        try {
-            res = toDnf(' ')
-            assert.fail('it should have thrown an exception')
-        } catch (ex) {
-
-        }
-
-        res = await callPython(null)
-        assert.strictEqual(res[0], 'null')
-
-        try {
-            res = await callPython('')
-            assert.fail('it should have thrown an exception')
-        } catch (ex) {
-
-        }
-
-        try {
-            res = await callPython(' ')
-            assert.fail('it should have thrown an exception')
-        } catch (ex) {
-
-        }
-    });
 
     it('jibberish no valid tokens, expect error', async function () {
         let inputStr = 'component.id23g23g23gabc'
         let res = toDnf(inputStr)
-        res = await callPython(inputStr)
-        assert.strictEqual(res[0], 'component.id23g23g23gabc')
+
+        let pythonRes = await callPython(inputStr)
+        assert.strictEqual(pythonRes[0], 'component.id23g23g23gabc')
     });
 
     it('jibberish containing and /or valid tokens, expect error', async function () {
@@ -158,6 +105,49 @@ describe('toDnf', function () {
         let pythonRes = await callPython(inputStr)
         assert.strictEqual(pythonRes[0], 'And(classification.family==g8, component.id==abc)')
         assert.strictEqual(pythonRes.length, 1)
+    });
+
+    it('null input, echos input', async function () {
+        let res = toDnf(null)
+        assert.strictEqual(res[0], 'null')
+
+        res = toDnf('null')
+        assert.strictEqual(res[0], 'null')
+
+        let pythonRes = await callPython(null)
+        assert.strictEqual(pythonRes[0], 'null')
+
+        pythonRes = await callPython('null')
+        assert.strictEqual(pythonRes[0], 'null')
+    });
+
+    it('empty input, throws error', async function () {
+        try {
+            res = toDnf('')
+            assert.fail('it should have thrown an exception')
+        } catch (ex) {
+
+        }
+
+        try {
+            res = toDnf(' ')
+            assert.fail('it should have thrown an exception')
+        } catch (ex) {
+
+        }
+
+        try {
+            res = await callPython('')
+            assert.fail('it should have thrown an exception')
+        } catch (ex) {
+        }
+
+        try {
+            res = await callPython(' ')
+            assert.fail('it should have thrown an exception')
+        } catch (ex) {
+
+        }
     });
 
 });
