@@ -1,5 +1,7 @@
 const DEBUG = process.env.DEBUG === 'true'
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
+const positiveSymbols = ['==', '⊃⊃']
+const negatedSymbols = ['!=', '!⊃']
 
 class Token {
     constructor(token, currentPlaceholder, nonExprHolder) {
@@ -13,10 +15,26 @@ class Token {
         this.lhSideChars = nonExprHolder
         this.rhSideChars = ''
         this.value = true
+
     }
 
     getEval() {
         return this.lhSideChars + this.value + this.rhSideChars
+    }
+
+    getAbstractSyntaxTree() {
+        return (this.lhSideChars + this.getSymbolNegation() + this.rhSideChars).replace(/\|\|/g, " OR ").replace(/&&/g, " AND ")
+    }
+
+    getSymbolNegation() {
+        if (positiveSymbols.includes(this.symbol)) {
+            return this.placeHolder
+        } else if (negatedSymbols.includes(this.symbol)) {
+            //return ` NOT(${this.placeHolder})`
+            return ` !${this.placeHolder}`
+        } else {
+            return this.placeHolder
+        }
     }
 
     getConditionalSymbol() {

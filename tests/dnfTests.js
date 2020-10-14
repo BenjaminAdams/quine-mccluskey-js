@@ -2,6 +2,12 @@ process.env.DEBUG = true
 const assert = require('assert');
 const callPython = require('./python/callPython.js')
 const toDnf = require('../index.js')
+const logic = require('../logic.js')
+
+let res = logic.getTerms("a+(b'(c+d))") //a OR ( !b AND (c OR d))
+console.log(res)
+res = logic.getTerms("a+b")
+console.log(res)
 
 describe('toDnf', function () {
     this.timeout(50000)
@@ -48,7 +54,9 @@ describe('toDnf', function () {
 
     it('should simplify to !B', async function () {
         //let inputStr = 'component.id==abc or (component.id⊃⊃def and (classification.family==g8 or classification.family==X1))'
-        let inputStr = 'component.id==abc or (component.id!=def and (classification.family==g8 or classification.family==X1))'
+        //it cant handle ⊃⊃
+        let inputStr = 'component.id==abc or (component.id==def and (classification.family==g8 or classification.family==X1))'
+
         let res = toDnf(inputStr)
         let pythonRes = await callPython(inputStr)
         assert.strictEqual(pythonRes[0], 'component.id==abc')
@@ -91,7 +99,7 @@ describe('toDnf', function () {
         assert.strictEqual(res.length, 3)
 
         let pythonRes = await callPython(inputStr)
-        assert.strictEqual(pythonRes[0], 'And(classification.family==g8, component.id==abc)')
+        assert.strictEqual(pythonRes[0], 'Or(classification.family==g8, component.id==abc)')
         assert.strictEqual(pythonRes.length, 1)
     });
 

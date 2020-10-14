@@ -1,10 +1,13 @@
 const Token = require('./token.js')
+const LogicTree = require('./logic-tree/index.js')
+const BracketTree = require('./logic-tree/bracket-tree.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
-const placeholders = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
+const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 let placeholderIndex = -1
 let expDict = {}
 const DEBUG = process.env.DEBUG === 'true'
+
 
 
 function toDnf(input) {
@@ -18,16 +21,52 @@ function toDnf(input) {
     }
 
     let tokens = prepareTokens(input)
-    let trueTokenSets = findTrueTokens(tokens)
-    let result = createAndConditions(trueTokenSets)
+    let tokenSets = findTrueTokens(tokens)
+
+    let simplified = simp(tokens)
+
+    let result = createAndConditions(tokenSets)
 
     return result
 }
 
-function createAndConditions(trueTokenSets) {
+function simp(tokens) {
+    let simplifiedSets = []
+    let logicExpression = ''
+    for (let i = 0; i < tokens.length; i++) {
+        logicExpression += tokens[i].getAbstractSyntaxTree()
+    }
+
+    const bracketTree = new BracketTree(logicExpression);
+    const logicTree = new LogicTree(bracketTree.nodes, bracketTree.text).getAst();
+    console.log(JSON.stringify(logicTree))
+
+    function parse(tree, soFar) {
+        if (tree.text) {
+            return tree.text
+        }
+        if (tree.name && !tree.name.includes('node')) {
+            simplifiedSets.push(soFar + tree.name)
+        }
+
+        if (tree.orParams) {
+            for (let i = 0; i < tree.orParams.length; i++) {
+                soFar += parse(tree.orParams[i])
+            }
+        }
+    }
+
+    var res = parse(logicTree, '')
+
+    return simplifiedSets
+}
+
+function createAndConditions(tokenSets) {
     let andConditions = []
-    for (let i = 0; i < trueTokenSets.length; i++) {
-        let currentTokens = trueTokenSets[i]
+    for (let i = 0; i < tokenSets.length; i++) {
+        let currentTokens = tokenSets[i]
+        if (currentTokens.result === false) continue;
+
         let currentConditions = []
         for (let j = 0; j < currentTokens.length; j++) {
             let currentCondition = currentTokens[j].left
@@ -48,7 +87,7 @@ function createAndConditions(trueTokenSets) {
 }
 
 function findTrueTokens(tokens) {
-    let trueTokenSets = []
+    let tokenSets = []
     let row = []
     let truthTable = []
     truthTable.push(getLetters(tokens))
@@ -62,21 +101,17 @@ function findTrueTokens(tokens) {
         let result = evalTokens(tokens)
         truthTable.push(getValues(tokens, result))
 
-        if (result) {
-            trueTokenSets.push(copyTokens(tokens))
-        }
+        tokenSets.push(copyTokens(tokens, result))
     }
 
     printTruthTable(truthTable, tokens)
-    return trueTokenSets
+    return tokenSets
 }
 
 function evalTokens(tokens) {
     let evalStatement = ''
     for (let i = 0; i < tokens.length; i++) {
-        evalStatement += tokens[i].lhSideChars
-        evalStatement += tokens[i].value
-        evalStatement += tokens[i].rhSideChars
+        evalStatement += tokens[i].getEval()
     }
     console.log(evalStatement, '==', eval(evalStatement))
     return eval(evalStatement)
@@ -119,6 +154,42 @@ function prepareTokens(input) {
     return objTokens
 }
 
+// function simplify(expression) {
+//     let result = ''; // Result for calculation expression
+
+//     const expressionInLowerCase = expression.toLowerCase();
+
+//     const value = ['false', 'true'];
+//     for (let i = 0; i < 2; i++) {
+//         for (let j = 0; j < 2; j++) {
+//             let localResult = eval(
+//                 expressionInLowerCase
+//                     .replace(/a(?!lse)/g, value[i]) // Replace 'a' variable
+//                     .replace(/b/g, value[j])  // Replace 'b' variable
+//             );
+//             result += !!localResult ? '1' : '0';
+//         }
+//     }
+
+//     return {
+//         '0000': 'false',
+//         '0001': 'a && b',
+//         '0010': 'a && !b',
+//         '0011': 'a',
+//         '0100': '!a && b',
+//         '0101': 'b',
+//         '0110': 'a != b',
+//         '0111': 'a || b',
+//         '1000': '!(a || b)',
+//         '1001': 'a == b',
+//         '1010': '!b',
+//         '1011': 'a || !b',
+//         '1100': '!a',
+//         '1101': '!a || b',
+//         '1110': '!(a && b)',
+//         '1111': 'true'
+//     }[result];
+// };
 
 function getLetters(tokens) {
     if (!DEBUG) return []
@@ -151,12 +222,15 @@ function isExpression(token) {
 
 
 
-function copyTokens(arrayOfTokens) {
+function copyTokens(arrayOfTokens, result) {
     if (!arrayOfTokens || arrayOfTokens.length === 0) return arrayOfTokens
 
-    return arrayOfTokens.map(function (token) {
+    let tokenSet = arrayOfTokens.map(function (token) {
         return Object.assign(Object.create(Object.getPrototypeOf(token)), token)
     })
+    tokenSet.result = result
+
+    return tokenSet
 
 }
 
