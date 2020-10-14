@@ -1,8 +1,6 @@
 const Token = require('./token.js')
-const LogicTree = require('./logic-tree/index.js')
-const BracketTree = require('./logic-tree/bracket-tree.js')
+const simplify = require('./simplify.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
-const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
 const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 let placeholderIndex = -1
 let expDict = {}
@@ -21,70 +19,71 @@ function toDnf(input) {
     }
 
     let tokens = prepareTokens(input)
-    let tokenSets = findTrueTokens(tokens)
+    // let tokenSets = findTrueTokens(tokens)
 
-    let simplified = simp(tokens)
-
-    let result = createAndConditions(tokenSets)
+    let terms = getSimplifiedTerms(tokens)
+    let result = createAndConditions(tokens, terms)
 
     return result
 }
 
-function simp(tokens) {
-    let simplifiedSets = []
+function getSimplifiedTerms(tokens) {
     let logicExpression = ''
     for (let i = 0; i < tokens.length; i++) {
-        logicExpression += tokens[i].getAbstractSyntaxTree()
+        logicExpression += tokens[i].getFullExpression()
     }
 
-    const bracketTree = new BracketTree(logicExpression);
-    const logicTree = new LogicTree(bracketTree.nodes, bracketTree.text).getAst();
-    console.log(JSON.stringify(logicTree))
+    let terms = simplify(logicExpression)
 
-    function parse(tree, soFar) {
-        if (tree.text) {
-            return tree.text
-        }
-        if (tree.name && !tree.name.includes('node')) {
-            simplifiedSets.push(soFar + tree.name)
-        }
+    return terms
+}
 
-        if (tree.orParams) {
-            for (let i = 0; i < tree.orParams.length; i++) {
-                soFar += parse(tree.orParams[i])
+function createAndConditions(tokens, terms) {
+    return terms.map(function (term, iterator) {
+        let expAry = []
+        for (let i = 0; i < term.length; i++) {
+            let token = tokens.filter(x => x.placeHolder == term[i])
+            if (term[i + 1] === "'") {
+                expAry.push(token[0].getRebuiltExpression(true))
+                i++
+            } else {
+                expAry.push(token[0].getRebuiltExpression(false))
             }
+
         }
-    }
+        if (term.length === 1) {
+            return expAry.join(', ')
+        } else {
+            return `And(${expAry.join(', ')})`
+        }
 
-    var res = parse(logicTree, '')
-
-    return simplifiedSets
+    })
 }
 
-function createAndConditions(tokenSets) {
-    let andConditions = []
-    for (let i = 0; i < tokenSets.length; i++) {
-        let currentTokens = tokenSets[i]
-        if (currentTokens.result === false) continue;
+// function createAndConditions(tokenSets) {
+//     let andConditions = []
+//     for (let i = 0; i < tokenSets.length; i++) {
+//         let currentTokens = tokenSets[i]
+//         if (currentTokens.result === false) continue;
 
-        let currentConditions = []
-        for (let j = 0; j < currentTokens.length; j++) {
-            let currentCondition = currentTokens[j].left
-            currentCondition += currentTokens[j].getConditionalSymbol()
-            currentCondition += currentTokens[j].right
-            currentConditions.push(currentCondition)
-        }
+//         let currentConditions = []
+//         for (let j = 0; j < currentTokens.length; j++) {
+//             let currentCondition = currentTokens[j].left
+//             currentCondition += currentTokens[j].getConditionalSymbol()
+//             currentCondition += currentTokens[j].right
+//             currentConditions.push(currentCondition)
+//         }
 
-        if (currentConditions.length === 1) {
-            andConditions.push(currentConditions[0])
-        } else if (currentConditions.length > 1) {
-            andConditions.push('And(' + currentConditions.join(', ') + ')')
-        }
-    }
+//         if (currentConditions.length === 1) {
+//             andConditions.push(currentConditions[0])
+//         } else if (currentConditions.length > 1) {
+//             andConditions.push('And(' + currentConditions.join(', ') + ')')
+//         }
+//     }
 
-    console.table(andConditions)
-    return andConditions
-}
+//     console.table(andConditions)
+//     return andConditions
+// }
 
 function findTrueTokens(tokens) {
     let tokenSets = []

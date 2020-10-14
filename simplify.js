@@ -1,9 +1,9 @@
 
-module.exports.getTerms = function (input) {
+module.exports = function (input) {
     var min_terms = MinTerms.fromExpression(input);
     var f = new BooleanFunction(min_terms);
     var vars = SumOfProducts.removeDuplicates(input.replace(/[^a-zA-Z]/g, '').split(''));
-    vars.sort();
+    // vars.sort();
     var prime_imps = f.findPrimeImplicants();
     var table = PrimeImplicantTable.build(f.getMinTerms(), prime_imps);
     var sum_of_prods = SumOfProducts.fromTable(table);

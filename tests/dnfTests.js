@@ -2,11 +2,11 @@ process.env.DEBUG = true
 const assert = require('assert');
 const callPython = require('./python/callPython.js')
 const toDnf = require('../index.js')
-const logic = require('../logic.js')
+const simplify = require('../simplify.js')
 
-let res = logic.getTerms("a+(b'(c+d))") //a OR ( !b AND (c OR d))
+let res = simplify("a+(b'(c+d))") //a OR ( !b AND (c OR d))
 console.log(res)
-res = logic.getTerms("a+b")
+res = simplify("a+b")
 console.log(res)
 
 describe('toDnf', function () {

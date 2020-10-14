@@ -10,20 +10,30 @@ class Token {
         this.left = split[0] || ''
         this.placeHolder = currentPlaceholder
         this.symbol = split[1] || ''
+        this.positiveSymbol = this.getPositiveSymbol(this.symbol)
+        this.negatedSymbol = this.getNegativeSymbol(this.symbol)
         this.right = split[2] || ''
         this.originalToken = token
         this.lhSideChars = nonExprHolder
         this.rhSideChars = ''
         this.value = true
-
     }
 
     getEval() {
         return this.lhSideChars + this.value + this.rhSideChars
     }
 
-    getAbstractSyntaxTree() {
-        return (this.lhSideChars + this.getSymbolNegation() + this.rhSideChars).replace(/\|\|/g, " OR ").replace(/&&/g, " AND ")
+    getFullExpression() {
+        //NOT: a'
+        //AND: ab
+        //OR:  a+b
+        return (this.lhSideChars + this.getSymbolNegation() + this.rhSideChars).replace(/\|\|/g, "+").replace(/&&/g, "")
+    }
+
+    getRebuiltExpression(isNegated) {
+        let symbolForExp = isNegated ? this.negatedSymbol : this.positiveSymbol
+
+        return this.left + symbolForExp + this.right
     }
 
     getSymbolNegation() {
@@ -31,9 +41,26 @@ class Token {
             return this.placeHolder
         } else if (negatedSymbols.includes(this.symbol)) {
             //return ` NOT(${this.placeHolder})`
-            return ` !${this.placeHolder}`
+            //return ` !${this.placeHolder}`
+            return `${this.placeHolder}'`
         } else {
             return this.placeHolder
+        }
+    }
+
+    getPositiveSymbol(symbol) {
+        if (positiveSymbols.includes(symbol)) {
+            return symbol
+        } else {
+            return this.negateSymbol(symbol)
+        }
+    }
+
+    getNegativeSymbol(symbol) {
+        if (negatedSymbols.includes(symbol)) {
+            return symbol
+        } else {
+            return this.negateSymbol(symbol)
         }
     }
 
