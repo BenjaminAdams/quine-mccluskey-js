@@ -6,7 +6,7 @@ const toDnf = require('../index.js')
 describe('toDnf', function () {
     this.timeout(50000)
 
-    it('invalid input, expect empty array', async function () {
+    it('invalid input, echos input', async function () {
         let inputStr = 'x=5' //not enough chars, it needs to be x==5
         let res = toDnf(inputStr)
         assert.strictEqual(res[0], 'x=5')

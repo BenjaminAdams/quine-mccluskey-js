@@ -14,12 +14,13 @@ function toDnf(input) {
         throw 'unexpected token'
     }
     else if (!input || input.length < 4) {
-        return
+        return [input]
     }
+
     let tokens = prepareTokens(input)
     let trueTokenSets = findTrueTokens(tokens)
     let result = createAndConditions(trueTokenSets)
-    console.table(result)
+
     return result
 }
 
@@ -40,33 +41,33 @@ function createAndConditions(trueTokenSets) {
         } else if (currentConditions.length > 1) {
             andConditions.push('And(' + currentConditions.join(', ') + ')')
         }
-
     }
 
+    console.table(andConditions)
     return andConditions
 }
 
 function findTrueTokens(tokens) {
     let trueTokenSets = []
     let row = []
-    let rows = []
-    rows.push(getLetters(tokens))
+    let truthTable = []
+    truthTable.push(getLetters(tokens))
 
     for (var i = (Math.pow(2, tokens.length) - 1); i >= 0; i--) {
         for (var j = (tokens.length - 1); j >= 0; j--) {
             row[j] = (i & Math.pow(2, j)) ? true : false
-            tokens[j].currentValue = row[j]
+            tokens[j].value = row[j]
         }
 
         let result = evalTokens(tokens)
-        rows.push(getCurrentValues(tokens, result))
+        truthTable.push(getValues(tokens, result))
 
         if (result) {
             trueTokenSets.push(copyTokens(tokens))
         }
     }
 
-    printRows(rows, tokens)
+    printTruthTable(truthTable, tokens)
     return trueTokenSets
 }
 
@@ -74,7 +75,7 @@ function evalTokens(tokens) {
     let evalStatement = ''
     for (let i = 0; i < tokens.length; i++) {
         evalStatement += tokens[i].lhSideChars
-        evalStatement += tokens[i].currentValue
+        evalStatement += tokens[i].value
         evalStatement += tokens[i].rhSideChars
     }
     console.log(evalStatement, '==', eval(evalStatement))
@@ -84,28 +85,28 @@ function evalTokens(tokens) {
 function prepareTokens(input) {
     console.log(input)
 
-    let tokens = input.replace(/\s/g, '').split(firstSplitRegex)
+    let parts = input.replace(/\s/g, '').split(firstSplitRegex)
         .filter(x => x !== '')  //todo maybe find a better regex pattern that does not leave empty spaces as tokens so we can avoid .filter()
 
     let objTokens = []
     let nonExprCharHolder = ''
 
-    for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i] == 'AND' || tokens[i] == 'and') {
-            tokens[i] = '&&'
-        } else if (tokens[i] == 'OR' || tokens[i] == 'or') {
-            tokens[i] = '||'
+    for (let i = 0; i < parts.length; i++) {
+        if (parts[i] == 'AND' || parts[i] == 'and') {
+            parts[i] = '&&'
+        } else if (parts[i] == 'OR' || parts[i] == 'or') {
+            parts[i] = '||'
         }
 
-        if (!isExpression(tokens[i])) {
-            nonExprCharHolder += tokens[i]
-        } else if (isExpression(tokens[i])) {
-            // if (tokens[i].includes(validEqualityChars)) {
-            //     throw `token should contain a valid equality character token: ${tokens[i]} must be ${validEqualityChars.join()}`
+        if (!isExpression(parts[i])) {
+            nonExprCharHolder += parts[i]
+        } else if (isExpression(parts[i])) {
+            // if (parts[i].includes(validEqualityChars)) {
+            //     throw `parts should contain a valid equality character parts: ${parts[i]} must be ${validEqualityChars.join()}`
             // }
             var currentPlaceholder = getNextPlaceholder()
-            expDict[currentPlaceholder] = tokens[i]
-            objTokens.push(new Token(tokens[i], currentPlaceholder, nonExprCharHolder))
+            expDict[currentPlaceholder] = parts[i]
+            objTokens.push(new Token(parts[i], currentPlaceholder, nonExprCharHolder))
             nonExprCharHolder = ''
         }
     }
@@ -118,19 +119,6 @@ function prepareTokens(input) {
     return objTokens
 }
 
-function replaceExprWithObj(token, currentPlaceholder, nonExprHolder) {
-    let split = token.split(expressionSplitRegex)
-    return {
-        left: split[0] || '',
-        placeHolder: currentPlaceholder,
-        symbol: split[1] || '',
-        right: split[2] || '',
-        originalToken: token,
-        lhSideChars: nonExprHolder,
-        rhSideChars: '',
-        currentValue: true
-    }
-}
 
 function getLetters(tokens) {
     if (!DEBUG) return []
@@ -142,19 +130,19 @@ function getLetters(tokens) {
     return letters
 }
 
-function getCurrentValues(tokens, result) {
+function getValues(tokens, result) {
     if (!DEBUG) return []
-    let currentValues = []
+    let values = []
     for (let i = 0; i < tokens.length; i++) {
-        currentValues.push(tokens[i].currentValue)
+        values.push(tokens[i].value)
     }
-    currentValues.push(result)
-    return currentValues
+    values.push(result)
+    return values
 }
 
-function printRows(rows, tokens) {
+function printTruthTable(truthTable) {
     if (!DEBUG) return
-    console.table(rows)
+    console.table(truthTable)
 }
 
 function isExpression(token) {
@@ -165,7 +153,7 @@ function isExpression(token) {
 
 function copyTokens(arrayOfTokens) {
     if (!arrayOfTokens || arrayOfTokens.length === 0) return arrayOfTokens
-    // return JSON.parse(JSON.stringify(obj))
+
     return arrayOfTokens.map(function (token) {
         return Object.assign(Object.create(Object.getPrototypeOf(token)), token)
     })

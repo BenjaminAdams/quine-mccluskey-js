@@ -1,3 +1,4 @@
+const DEBUG = process.env.DEBUG === 'true'
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
 
 class Token {
@@ -11,14 +12,18 @@ class Token {
         this.originalToken = token
         this.lhSideChars = nonExprHolder
         this.rhSideChars = ''
-        this.currentValue = true
+        this.value = true
+    }
+
+    getEval() {
+        return this.lhSideChars + this.value + this.rhSideChars
     }
 
     getConditionalSymbol() {
-        if (this.currentValue) {
+        if (this.value) {
             return this.symbol
         } else {
-            return negateSymbol(this.symbol)
+            return this.negateSymbol(this.symbol)
         }
     }
 
