@@ -9,8 +9,13 @@ const DEBUG = process.env.DEBUG === 'true'
 
 
 function toDnf(input) {
-    if (!input || input.length < 4) {
-        return []
+    if (input == null) {
+        return ['null']
+    } else if (input === '' || input === ' ') {
+        throw 'unexpected token'
+    }
+    else if (!input || input.length < 4) {
+        return
     }
     let tokens = prepareTokens(input)
     let trueTokenSets = findTrueTokens(tokens)
@@ -35,8 +40,12 @@ function createAndConditions(trueTokenSets) {
             currentConditions.push(currentCondition)
         }
 
+        if (currentConditions.length === 1) {
+            andConditions.push(currentConditions[0])
+        } else if (currentConditions.length > 1) {
+            andConditions.push('And(' + currentConditions.join(', ') + ')')
+        }
 
-        andConditions.push('And(' + currentConditions.join(',') + ')')
     }
 
     return andConditions
@@ -96,9 +105,9 @@ function prepareTokens(input) {
         if (!isExpression(tokens[i])) {
             nonExprCharHolder += tokens[i]
         } else if (isExpression(tokens[i])) {
-            if (tokens[i].includes(validEqualityChars)) {
-                throw `token should contain a valid equality character token: ${tokens[i]} must be ${validEqualityChars.join()}`
-            }
+            // if (tokens[i].includes(validEqualityChars)) {
+            //     throw `token should contain a valid equality character token: ${tokens[i]} must be ${validEqualityChars.join()}`
+            // }
             var currentPlaceholder = getNextPlaceholder()
             expDict[currentPlaceholder] = tokens[i]
             objTokens.push(replaceExprWithObj(tokens[i], currentPlaceholder, nonExprCharHolder))
@@ -117,10 +126,10 @@ function prepareTokens(input) {
 function replaceExprWithObj(token, currentPlaceholder, nonExprHolder) {
     let split = token.split(expressionSplitRegex)
     return {
-        left: split[0],
+        left: split[0] || '',
         placeHolder: currentPlaceholder,
-        symbol: split[1],
-        right: split[2],
+        symbol: split[1] || '',
+        right: split[2] || '',
         originalToken: token,
         lhSideChars: nonExprHolder,
         rhSideChars: '',
