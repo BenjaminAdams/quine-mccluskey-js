@@ -1,7 +1,6 @@
-
+const Token = require('./token.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
 const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
-const validEqualityChars = ['==', '!=', '⊃⊃', '!⊃']
 const placeholders = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
 let placeholderIndex = -1
 let expDict = {}
@@ -31,11 +30,7 @@ function createAndConditions(trueTokenSets) {
         let currentConditions = []
         for (let j = 0; j < currentTokens.length; j++) {
             let currentCondition = currentTokens[j].left
-            if (currentTokens[j].currentValue) {
-                currentCondition += currentTokens[j].symbol
-            } else {
-                currentCondition += negateSymbol(currentTokens[j].symbol)
-            }
+            currentCondition += currentTokens[j].getConditionalSymbol()
             currentCondition += currentTokens[j].right
             currentConditions.push(currentCondition)
         }
@@ -67,7 +62,7 @@ function findTrueTokens(tokens) {
         rows.push(getCurrentValues(tokens, result))
 
         if (result) {
-            trueTokenSets.push(copyObj(tokens))
+            trueTokenSets.push(copyTokens(tokens))
         }
     }
 
@@ -110,7 +105,7 @@ function prepareTokens(input) {
             // }
             var currentPlaceholder = getNextPlaceholder()
             expDict[currentPlaceholder] = tokens[i]
-            objTokens.push(replaceExprWithObj(tokens[i], currentPlaceholder, nonExprCharHolder))
+            objTokens.push(new Token(tokens[i], currentPlaceholder, nonExprCharHolder))
             nonExprCharHolder = ''
         }
     }
@@ -166,23 +161,15 @@ function isExpression(token) {
     return (token != '(' && token != ')' && token != '&&' && token != '||')
 }
 
-function negateSymbol(symbol) {
-    switch (symbol) {
-        case '==':
-            return '!='
-        case '!=':
-            return '=='
-        case '⊃⊃':
-            return '!⊃'
-        case '!⊃':
-            return '⊃⊃'
-        default:
-            throw 'Unknown symbol: ' + symbol
-    }
-}
 
-function copyObj(obj) {
-    return JSON.parse(JSON.stringify(obj))
+
+function copyTokens(arrayOfTokens) {
+    if (!arrayOfTokens || arrayOfTokens.length === 0) return arrayOfTokens
+    // return JSON.parse(JSON.stringify(obj))
+    return arrayOfTokens.map(function (token) {
+        return Object.assign(Object.create(Object.getPrototypeOf(token)), token)
+    })
+
 }
 
 function getNextPlaceholder() {

@@ -19,6 +19,7 @@ describe('toDnf', function () {
     it('jibberish no valid tokens, expect error', async function () {
         let inputStr = 'component.id23g23g23gabc'
         let res = toDnf(inputStr)
+        assert.strictEqual(res[0], 'component.id23g23g23gabc')
 
         let pythonRes = await callPython(inputStr)
         assert.strictEqual(pythonRes[0], 'component.id23g23g23gabc')
