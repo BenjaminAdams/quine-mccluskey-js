@@ -18,13 +18,19 @@ function toDnf(input) {
         return [input]
     }
 
-    let tokens = prepareTokens(input)
-    // let tokenSets = findTrueTokens(tokens)
+    try {
+        let tokens = prepareTokens(input)
+        // let tokenSets = findTrueTokens(tokens)
 
-    let terms = getSimplifiedTerms(tokens)
-    let result = createAndConditions(tokens, terms)
+        let terms = getSimplifiedTerms(tokens)
+        let result = createAndConditions(tokens, terms)
 
-    return result
+        return result
+    } catch (ex) {
+        console.error('exception in toDnf ', ex)
+        return [input]
+    }
+
 }
 
 function getSimplifiedTerms(tokens) {
