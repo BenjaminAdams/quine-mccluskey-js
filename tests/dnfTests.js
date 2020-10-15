@@ -76,6 +76,16 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
+    it('expression with ⊃⊃ and !⊃', async function () {
+        let inputStr = 'component.id⊃⊃abc and component.id!⊃xxx'
+        let res = toDnf(inputStr)
+        assert.strictEqual(res[0], 'And(component.id⊃⊃abc, component.id!⊃xxx)')
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.strictEqual(pythonRes[0], 'And(component.id⊃⊃abc, component.id!⊃xxx)')
+        assert.strictEqual(pythonRes.length, 1)
+    });
 
     it('Two conditions (and)', async function () {
         let inputStr = 'classification.family==g8 and component.id==abc'

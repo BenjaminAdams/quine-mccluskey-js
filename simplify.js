@@ -653,12 +653,6 @@ function MissingTokenException(given, expected, position) {
     }
 }
 
-function InvalidExpressionException() {
-    this.toString = function () {
-        return "Invalid Expression";
-    }
-}
-
 function BooleanExpressionLexer(expr) {
     var index = 0;
     var tokens = [];
@@ -722,28 +716,3 @@ function BooleanExpressionLexer(expr) {
 }
 
 
-var termInputStringToArray = function (input) {
-    if ($.trim(input) == "")
-        return [];
-
-    var terms = input.split(",");
-    var output = [];
-    for (var i = 0; i < terms.length; i++) {
-        if ($.trim(terms[i]) == "")
-            continue;
-        // min terms can be input as a range (e.g. 2-6)
-        // if they are, we need to add all the terms in the range
-        var sub_terms = terms[i].split("-");
-        if (sub_terms.length == 2) { // it's a range
-            var start = parseInt($.trim(sub_terms[0]), 10);
-            var end = parseInt($.trim(sub_terms[1]), 10);
-            for (var j = start; j <= end; j++) {
-                output.push(j);
-            }
-        } else { // not a range, just add the term
-            output.push(parseInt($.trim(terms[i]), 10));
-        }
-    }
-
-    return output;
-}

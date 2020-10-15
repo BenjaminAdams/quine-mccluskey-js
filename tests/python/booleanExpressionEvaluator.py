@@ -24,7 +24,6 @@ class BooleanExpressionEvaluator:
     def generate_variable_name(self):
         return "v{}".format(len(self.variableSubstitution))
 
-
     def prep(self, expression):
         prep_exp = expression
         splits = [expression]
@@ -49,7 +48,8 @@ class BooleanExpressionEvaluator:
     def convert_to_string(self, individual_expression, variable_substitution):
         individual_expression_str = "{}".format(individual_expression)
         for key, value in variable_substitution.items():
-            individual_expression_str = individual_expression_str.replace(key, value)
+            individual_expression_str = individual_expression_str.replace(
+                key, value)
         return individual_expression_str
 
     def convert_to_dnf(self, expression):
@@ -65,15 +65,17 @@ class BooleanExpressionEvaluator:
         dnf_exp = {}
         try:
             dnf_exp = expr(prep_exp).to_dnf()
-        except Exception :
+        except Exception:
             traceback.print_exc()
         expressions = []
 
         if dnf_exp.ASTOP == 'and' or dnf_exp.depth <= 1:
-            expressions.append(self.convert_to_string(dnf_exp, self.variableSubstitution))
+            expressions.append(self.convert_to_string(
+                dnf_exp, self.variableSubstitution))
         else:
             for expression_dnf in dnf_exp.xs:
-                expressions.append(self.convert_to_string(expression_dnf, self.variableSubstitution))
+                expressions.append(self.convert_to_string(
+                    expression_dnf, self.variableSubstitution))
 
         # dnf = "{}".format(e.to_dnf())
         # for key, value in variableSubstitution.items():

@@ -27,6 +27,7 @@ class Token {
         //NOT: a'
         //AND: ab
         //OR:  a+b
+        //XOR: a^b
         return (this.lhSideChars + this.getSymbolNegation() + this.rhSideChars).replace(/\|\|/g, "+").replace(/&&/g, "")
     }
 

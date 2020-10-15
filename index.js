@@ -1,7 +1,7 @@
 const Token = require('./token.js')
 const simplify = require('./simplify.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
-const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 let placeholderIndex = -1
 let expDict = {}
 const DEBUG = process.env.DEBUG === 'true'
