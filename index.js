@@ -1,3 +1,4 @@
+
 const Token = require('./token.js')
 const simplify = require('./simplify.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g

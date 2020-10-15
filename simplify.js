@@ -8,7 +8,7 @@ module.exports = function (input) {
     let table = PrimeImplicantTable.build(f.getMinTerms(), prime_imps);
     let sum_of_prods = SumOfProducts.fromTable(table);
     let solns = SumOfProducts.reduce(sum_of_prods);
-    let pretty = SumOfProducts.toSymbols(solns, prime_imps, vars);
+    //let fullExpression = SumOfProducts.toSymbols(solns, prime_imps, vars);
     let terms = SumOfProducts.toTerms(solns, prime_imps, vars);
     return terms;
 };
@@ -93,7 +93,6 @@ function MinTerm(covers, bit_length, is_dont_care) {
         if (differences == 0)
             return -1;
 
-        //alert(this.toString() + "\n" + min_term.toString());
         return index_of_diff;
     }
 
@@ -277,7 +276,6 @@ function BooleanFunction(min_terms) {
         let terms = [];
         for (let k in remaining_terms) {
             terms.push(remaining_terms[k]);
-            //alert(essential_terms[k].bits.toString());
         }
         return terms;
     }
@@ -324,7 +322,6 @@ let PrimeImplicantTable = {
             for (let j = 0; j < primes.length; j++) {
                 if (primes[j].coversMinTerm(n)) {
                     table[n].push(primes[j]);
-                    //					alert(table[min_terms[i].covers[0]]);
                 }
             }
         }
@@ -332,9 +329,6 @@ let PrimeImplicantTable = {
     }
 }
 
-
-
-/* Represented A + BC = [A, [B,C] */
 let SumOfProducts = {
     distribute: function (x, y) {
         let z = [];
@@ -347,8 +341,6 @@ let SumOfProducts = {
 
         z = this.applyIdentity(z);
         return z;
-        //alert(this.prettyify(z));
-        //alert(z.join("+"));
     },
 
     removeDuplicates: function (a) {
@@ -439,7 +431,7 @@ let SumOfProducts = {
             return [0]; // contradiction
 
         // first build a lookup table
-        primes_lookup = {};
+        let primes_lookup = {};
         for (let i = 0; i < primes.length; i++) {
             primes_lookup[primes[i].id] = primes[i];
         }
@@ -470,7 +462,7 @@ let SumOfProducts = {
             return [0]; // contradiction
 
         // first build a lookup table
-        primes_lookup = {};
+        let primes_lookup = {};
         for (let i = 0; i < primes.length; i++) {
             primes_lookup[primes[i].id] = primes[i];
         }
@@ -502,12 +494,6 @@ let SumOfProducts = {
     }
 }
 
-/* Grammer 
-bool -> bool_term {+ bool_term}
-bool_term -> bool_factor {^ bool_factor}
-bool_factor -> bool_atom {bool_atom}
-bool_atom -> bool_atom' | (bool) | var
-*/
 let Token = {
     isWhitespace: function (c) {
         switch (c) {
