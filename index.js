@@ -3,13 +3,14 @@ const Token = require('./token.js')
 const simplify = require('./simplify.js')
 const firstSplitRegex = /(and|or|AND|OR|\(|\))/g
 const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-let placeholderIndex = -1
+let placeholderIndex;
 let expDict = {}
 const DEBUG = process.env.DEBUG === 'true'
 
 
 
 function toDnf(input) {
+    placeholderIndex = -1
     if (input == null) {
         return ['null']
     } else if (input === '' || input === ' ') {
@@ -111,11 +112,5 @@ function getNextPlaceholder() {
 }
 
 
-if (!DEBUG) {
-    console = console || {};
-    console.log = function () { };
-    console.table = function () { };
-
-}
 
 module.exports = toDnf

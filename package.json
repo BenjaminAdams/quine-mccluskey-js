@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/dnfTests.js"
+    "test": "mocha tests/dnfTests.js",
+    "manualTest": "node ./manualTest/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,8 +17,5 @@
     "mocha": "^8.1.3",
     "nyc": "^15.1.0"
   },
-  "dependencies": {
-    "quine-mccluskey-js": "^0.3.0",
-    "ramda": "^0.27.1"
-  }
+  "dependencies": {}
 }

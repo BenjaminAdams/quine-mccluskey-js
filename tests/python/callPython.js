@@ -6,7 +6,7 @@ async function callPython(inputStr) {
     return new Promise((resolve, reject) => {
 
         pythonProcess.stdout.on('data', function (data) {
-            console.log('python result=', data.toString())
+            // console.log('python result=', data.toString())
             resolve(JSON.parse(data.toString()
                 .replace('\r\n', '')
                 .replace(/\u2283/g, '⊃')
@@ -14,14 +14,14 @@ async function callPython(inputStr) {
         });
 
         pythonProcess.stderr.on('data', function (data) {
-            console.log('python result=', data.toString())
+            console.error('python result=', data.toString())
             reject(data.toString())
         });
 
-        pythonProcess.on('exit', function (code, signal) {
-            console.log('child process exited with ' +
-                `code ${code} and signal ${signal}`);
-        });
+        // pythonProcess.on('exit', function (code, signal) {
+        //     console.log('child process exited with ' +
+        //         `code ${code} and signal ${signal}`);
+        // });
 
         pythonProcess.on('message', (msg) => {
             console.log('Message from child', msg);

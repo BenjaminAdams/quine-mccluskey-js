@@ -1,13 +1,21 @@
 process.env.DEBUG = true
 const assert = require('assert');
+const fs = require('fs');
 const callPython = require('./python/callPython.js')
 const toDnf = require('../index.js')
 
 //("a+(b'(c+d))") 
 //a OR ( !b AND (c OR d))
 
+
+
+//Component.id==683-23437 and Classification.id==baseitem_apjc_ps9000_48671
+
 describe('toDnf', function () {
     this.timeout(50000)
+
+
+
 
     it('invalid input, echos input', async function () {
         let inputStr = 'x=5' //not enough chars, it needs to be x==5
@@ -197,3 +205,6 @@ describe('toDnf', function () {
     });
 
 });
+
+
+
