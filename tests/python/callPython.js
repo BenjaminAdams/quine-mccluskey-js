@@ -1,5 +1,4 @@
 const spawn = require("child_process").spawn
-const { promises } = require('fs');
 
 async function callPython(inputStr) {
     const pythonProcess = spawn('py', ["tests/python/runExpr.py", inputStr]);
@@ -22,10 +21,6 @@ async function callPython(inputStr) {
         //     console.log('child process exited with ' +
         //         `code ${code} and signal ${signal}`);
         // });
-
-        pythonProcess.on('message', (msg) => {
-            console.log('Message from child', msg);
-        });
 
     });
 }

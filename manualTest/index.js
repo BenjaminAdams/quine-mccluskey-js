@@ -1,4 +1,5 @@
 process.env.DEBUG = true
+var os = require('os');
 const fs = require('fs');
 const callPython = require('../tests/python/callPython.js')
 const toDnf = require('../index.js')
@@ -8,10 +9,10 @@ const toDnf = require('../index.js')
 async function run() {
 
     let allUniqueValuesFromDevDb = require('./mongo-dev-db.json')
-    let filename = `./manualTest/problems-${Date.now()}.json`
+    let filename = `./manualTest/problems-${Date.now()}.txt`
 
     for (let i = 0; i < allUniqueValuesFromDevDb.length; i++) {
-        console.log(i)
+        console.log(`${i}/${allUniqueValuesFromDevDb.length}`)
         let inputStr = allUniqueValuesFromDevDb[i]
         let startDnf = Date.now()
         let toDnfRes = toDnf(inputStr)
@@ -22,7 +23,7 @@ async function run() {
         console.log(`dnf ms=${dnfMs} Result=${JSON.stringify(toDnfRes)}`)
         console.log(`py  ms=${pythonMs} Result=${JSON.stringify(pythonRes)}`)
 
-        let errorStr = `inputStr: ${inputStr} generated non-matching results. toDnfRes=${toDnfRes} pythnRes=${pythonRes}`
+        let errorStr = `inputStr: ${inputStr}${os.EOL}toDnfRes=${toDnfRes}${os.EOL}pythonRes=${pythonRes}${os.EOL}${os.EOL}`
 
         if (pythonRes.length !== toDnfRes.length) {
             writeProblem(filename, errorStr)
@@ -45,8 +46,7 @@ setTimeout(async function () {
 
 function writeProblem(filename, data) {
     console.error(data)
-    fs.writeFileSync(filename, JSON.stringify(data, null, 2) + "\r\n", {
-        //flag: refresh ? "w" : "a+",
+    fs.writeFileSync(filename, data + "\r\n", {
         flag: 'a+'
     });
 }
