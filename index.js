@@ -55,20 +55,22 @@ function createAndConditions(tokens, terms) {
 
         }
         if (term.length === 1) {
-            return expAry.join(', ')
+            return unescapeSemiColonValues(expAry.join(', '))
         } else {
-            return `And(${expAry.join(', ')})`
+            return unescapeSemiColonValues(`And(${expAry.join(', ')})`)
         }
 
     })
+
 }
 
 
 
-function prepareTokens(input) {
-    console.log(input)
 
-    let parts = input.replace(/\s/g, '').split(firstSplitRegex)
+function prepareTokens(input) {
+    input = escapeSemiColonValues(input)
+    let parts = input.replace(/\s/g, '')
+        .split(firstSplitRegex)
         .filter(x => x !== '')  //todo maybe find a better regex pattern that does not leave empty spaces as tokens so we can avoid .filter()
 
     let objTokens = []
@@ -111,6 +113,33 @@ function getNextPlaceholder() {
     return placeholders[placeholderIndex]
 }
 
+const equalsEqualsSearchStr = /;value==/g
+const equalEqualsPh = 'value_equals_equals_ph'
 
+const notEqualsSearchStr = /;value!=/g
+const notEqualsPh = 'value_not_equals_ph'
+
+const containsSearchStr = /;value⊃⊃/g
+const containsPh = 'value_contains_ph'
+
+const notContainsSearchStr = /;value!⊃/g
+const notContainsPh = 'value_not_contains_ph'
+
+//replaces ;Value== with escaped characters so they are not split in the next step
+function escapeSemiColonValues(str) {
+    str = str.replace(equalsEqualsSearchStr, equalEqualsPh)
+    str = str.replace(notEqualsSearchStr, notEqualsPh)
+    str = str.replace(containsSearchStr, containsPh)
+    str = str.replace(notContainsSearchStr, notContainsPh)
+    return str
+}
+
+function unescapeSemiColonValues(str) {
+    str = str.replace(equalEqualsPh, ';value==')
+    str = str.replace(notEqualsPh, ';value!=')
+    str = str.replace(containsPh, ';value⊃⊃')
+    str = str.replace(notContainsPh, ';value!⊃')
+    return str
+}
 
 module.exports = toDnf

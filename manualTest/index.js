@@ -12,30 +12,35 @@ async function run() {
     let filename = `./manualTest/problems-${Date.now()}.txt`
 
     for (let i = 0; i < allUniqueValuesFromDevDb.length; i++) {
-        console.log(`${i}/${allUniqueValuesFromDevDb.length}`)
-        let inputStr = allUniqueValuesFromDevDb[i]
-        let startDnf = Date.now()
-        let toDnfRes = toDnf(inputStr)
-        let dnfMs = Date.now() - startDnf
-        let startPython = Date.now()
-        let pythonRes = await callPython(inputStr)
-        let pythonMs = Date.now() - startPython
-        console.log(`dnf ms=${dnfMs} Result=${JSON.stringify(toDnfRes)}`)
-        console.log(`py  ms=${pythonMs} Result=${JSON.stringify(pythonRes)}`)
+        try {
+            console.log(`${i}/${allUniqueValuesFromDevDb.length}`)
+            let inputStr = allUniqueValuesFromDevDb[i]
+            let startDnf = Date.now()
+            let toDnfRes = toDnf(inputStr)
+            let dnfMs = Date.now() - startDnf
+            let startPython = Date.now()
+            let pythonRes = await callPython(inputStr)
+            let pythonMs = Date.now() - startPython
+            console.log(`dnf ms=${dnfMs} Result=${JSON.stringify(toDnfRes)}`)
+            console.log(`py  ms=${pythonMs} Result=${JSON.stringify(pythonRes)}`)
 
-        let errorStr = `inputStr: ${inputStr}${os.EOL}toDnfRes=${toDnfRes}${os.EOL}pythonRes=${pythonRes}${os.EOL}${os.EOL}`
+            let errorStr = `inputStr: ${inputStr}${os.EOL}toDnfRes=${toDnfRes}${os.EOL}pythonRes=${pythonRes}${os.EOL}${os.EOL}`
 
-        if (pythonRes.length !== toDnfRes.length) {
-            writeProblem(filename, errorStr)
-            continue;
-        }
-
-        for (let x = 0; x < toDnfRes.length; x++) {
-            if (!pythonRes.includes(toDnfRes[x])) {
+            if (pythonRes.length !== toDnfRes.length) {
                 writeProblem(filename, errorStr)
-                break;
+                continue;
             }
+
+            for (let x = 0; x < toDnfRes.length; x++) {
+                if (!pythonRes.includes(toDnfRes[x])) {
+                    writeProblem(filename, errorStr)
+                    break;
+                }
+            }
+        } catch (ex) {
+            writeProblem(filename, `error in manual test: ${ex}`)
         }
+
     }
 }
 

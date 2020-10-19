@@ -14,9 +14,6 @@ const toDnf = require('../index.js')
 describe('toDnf', function () {
     this.timeout(50000)
 
-
-
-
     it('invalid input, echos input', async function () {
         let inputStr = 'x=5' //not enough chars, it needs to be x==5
         let res = toDnf(inputStr)
@@ -28,6 +25,49 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
+    it('contains a semicolon, XXX;value==', async function () {
+        let inputStr = 'Component.id==487-bbdw and Classification.type==Family;value==14437'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('And(Component.id==487-bbdw, Classification.type==Family;value==14437)'))
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('And(Component.id==487-bbdw, Classification.type==Family;value==14437)'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
+    it('contains a semicolon, XXX;value!=', async function () {
+        let inputStr = 'Component.id==487-bbdw and Classification.type==Family;value!=14437'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('And(Component.id==487-bbdw, Classification.type==Family;value!=14437)'))
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('And(Component.id==487-bbdw, Classification.type==Family;value!=14437)'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
+    it('contains a semicolon, XXX;value⊃⊃', async function () {
+        let inputStr = 'Component.id==487-bbdw and Classification.type==Family;value⊃⊃14437'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('And(Component.id==487-bbdw, Classification.type==Family;value⊃⊃14437)'))
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('And(Component.id==487-bbdw, Classification.type==Family;value⊃⊃14437)'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
+    it('contains a semicolon, XXX;value⊃⊃', async function () {
+        let inputStr = 'Component.id==487-bbdw and Classification.type==Family;value⊃⊃14437'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('And(Component.id==487-bbdw, Classification.type==Family;value⊃⊃14437)'))
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('And(Component.id==487-bbdw, Classification.type==Family;value⊃⊃14437)'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
 
     it('jibberish no valid tokens, expect error', async function () {
         let inputStr = 'component.id23g23g23gabc'

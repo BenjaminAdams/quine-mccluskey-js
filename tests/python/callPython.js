@@ -1,7 +1,8 @@
 const spawn = require("child_process").spawn
 
 async function callPython(inputStr) {
-    const pythonProcess = spawn('py', ["tests/python/runExpr.py", inputStr]);
+	try{
+		    const pythonProcess = spawn('py', ["tests/python/runExpr.py", inputStr]);
     return new Promise((resolve, reject) => {
 
         pythonProcess.stdout.on('data', function (data) {
@@ -23,6 +24,9 @@ async function callPython(inputStr) {
         // });
 
     });
+	}catch(ex){
+		return ex.message
+	}
 }
 
 module.exports = callPython
