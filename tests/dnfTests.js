@@ -158,9 +158,10 @@ describe('toDnf', function () {
     });
 
     it('even more weird spacing/outside parenthesis issue around expr', async function () {
+        //(a'b)(c)
         let inputStr = '(( ( Component.id!=1013187 and Classification.id ==p4/b1163/713 )) and ((  Item.id==cmlsc9000_v4_emea_1_dssc460enclosure)))'
         let res = toDnf(inputStr)
-        //assert.ok(res.includes('And(Component.id!=1013187, Classification.id ==p4/b1163/713, Item.id==cmlsc9000_v4_emea_1_dssc460enclosure)'))
+        assert.ok(res.includes('And(Component.id!=1013187, Classification.id ==p4/b1163/713, Item.id==cmlsc9000_v4_emea_1_dssc460enclosure)'))
         assert.strictEqual(res.length, 1)
 
         let pythonRes = await callPython(inputStr)
@@ -232,8 +233,10 @@ describe('toDnf', function () {
     });
 
     it('many conditions', async function () {
+        let start = Date.now()
         let inputStr = 'clly==g8 or comp==abc and asd==123 or fff!=sss and fda⊃⊃ggg or gas!⊃kkf and eee==uuu or jjj!=aaa and ttt⊃⊃sss or kas==kok'
         let res = toDnf(inputStr)
+        console.log(`dnf ms=${Date.now() - start}`)
         assert.ok(res.includes('clly==g8'))
         assert.ok(res.includes('kas==kok'))
         assert.ok(res.includes('And(gas!⊃kkf, eee==uuu)'))
@@ -242,7 +245,9 @@ describe('toDnf', function () {
         assert.ok(res.includes('And(jjj!=aaa, ttt⊃⊃sss)'))
         assert.strictEqual(res.length, 6)
 
+        start = Date.now()
         let pythonRes = await callPython(inputStr)
+        console.log(`python ms=${Date.now() - start}`)
         assert.ok(pythonRes.includes('clly==g8'))
         assert.ok(pythonRes.includes('kas==kok'))
         assert.ok(pythonRes.includes('And(gas!⊃kkf, eee==uuu)'))

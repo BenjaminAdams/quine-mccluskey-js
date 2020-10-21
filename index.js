@@ -75,8 +75,10 @@ function prepareTokens(input) {
     let nonExprCharHolder = ''
 
     for (let i = 0; i < parts.length; i++) {
-        if (!parts[i]) continue;
+        if (typeof (parts[i]) === 'undefined') continue;
         parts[i] = parts[i].trim()
+        if (!parts[i]) continue;
+
         if (parts[i] == 'AND' || parts[i] == 'and') {
             parts[i] = '&&'
         } else if (parts[i] == 'OR' || parts[i] == 'or') {
@@ -142,52 +144,64 @@ function unescapeSemiColonValues(str) {
     return str
 }
 
+// function removeUnnecessaryParenthesis(str) {
+//     var i = 0;
+//     return (function recur(b) {
+//         var c, s = '';
+//         while (c = str.charAt(i++)) {          // Keep getting chars
+//             if (c == ')') return s;            // End of inner part
+//             if (c == '(') {
+//                 var s1 = recur(true),         // Get inner part
+//                     s2 = recur();             // Get following part
+//                 return s + (!b || s2 ? '(' + s1 + ')' : s1) + s2;
+//             }
+//             s += c;                           // Add current char
+//             b = false;
+//         }
+//         return s;
+//     })();
+// }
+
 
 
 function removeUnnecessaryParenthesis(str) {
-    var i = 0;
-    return (function recur(b) {
-        var c, s = '';
-        while (c = str.charAt(i++)) {          // Keep getting chars
-            if (c == ')') return s;            // End of inner part
-            if (c == '(') {
-                var s1 = recur(true),         // Get inner part
-                    s2 = recur();             // Get following part
-                return s + (!b || s2 ? '(' + s1 + ')' : s1) + s2;
-            }
-            s += c;                           // Add current char
-            b = false;
-        }
-        return s;
-    })();
-}
+    if (!str || str.length < 2) return str
+    let queue = []
+    let removals = []
 
-// function removeUnnecessaryParenthesis(str) {
-//     // Tokenize the pattern
-//     var pieces = str.split(/(\\.|\[(?:\\.|[^\]\\])+]|\((?:\?[:!=])?|\)(?:[*?+]\??|\{\d+,?\d*}\??)?)/g);
-//     var stack = [];
-//     for (var i = 0; i < pieces.length; i++) {
-//         if (pieces[i].substr(0, 1) == "(") {
-//             // Opening parenthesis
-//             stack.push(i);
-//         } else if (pieces[i].substr(0, 1) == ")") {
-//             // Closing parenthesis
-//             if (stack.length == 0) {
-//                 // Unbalanced; Just skip the next one.
-//                 continue;
-//             }
-//             var j = stack.pop();
-//             if ((pieces[j] == "(" || pieces[j] == "(?:") && pieces[i] == ")") {
-//                 // If it is a capturing group, or a non-capturing group, and is
-//                 // not followed by a quantifier;
-//                 // Clear both the opening and closing pieces.
-//                 pieces[i] = "";
-//                 pieces[j] = "";
-//             }
-//         }
-//     }
-//     return pieces.join("").trim()
-// }
+    for (let i = 0; i < str.length; i++) {
+        let a = str[i];
+
+        if (a == '(') {
+            queue.push({ val: i, bool: false });
+        }
+        else if (a == ')') {
+            if (queue[queue.length - 1].bool) {
+                // remove top.int and i from string in a later step
+                removals.push(queue[queue.length - 1].val, i)
+            }
+
+            queue.pop()
+            if (queue.length > 0) {
+                queue[queue.length - 1].bool = true;
+            }
+
+        }
+        else if (queue.length > 0) {
+            queue[queue.length - 1].bool = false;
+        }
+    }
+
+    let removedSoFar = 0
+    str = str.split('')
+    removals = removals.sort((a, b) => a - b)
+    for (let i = 0; i < removals.length; i++) {
+        str.splice(removals[i] - removedSoFar, 1)
+        removedSoFar++
+    }
+
+    return str.join('')
+}
 
 
 module.exports = toDnf

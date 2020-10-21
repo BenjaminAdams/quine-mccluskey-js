@@ -195,12 +195,14 @@ let MinTerms = {
 }
 
 function BooleanFunction(min_terms) {
+
     this.findPrimeImplicants = function () {
         let groups = this.joinTerms();
         let terms = this.getRemainingTerms(groups);
         return terms;
     }
 
+    // this.joinTerms is the bottleneck of this entire file
     this.joinTerms = function () {
         let groups = [];
         groups.push(min_terms);
