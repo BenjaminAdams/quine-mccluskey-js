@@ -1,12 +1,8 @@
 
 const Token = require('./token.js')
-const simplify = require('./simplify.js')
+const QuineMcCluskey = require('./qmc.js')
 const firstSplitRegex = /\s(and|or|AND|OR)\s|(\(|\))/g
-const placeholders = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-let placeholderIndex;
-let expDict = {}
 const DEBUG = process.env.DEBUG === 'true'
-
 
 
 function toDnf(input) {
@@ -21,54 +17,43 @@ function toDnf(input) {
     }
 
     try {
+
         let tokens = prepareTokens(input)
-        let terms = getSimplifiedTerms(tokens)
-        return createAndConditions(tokens, terms)
+        //let truthTableResult = [0, 0, 0, 1, 0, 0, 0, 0]
+        let truthTableResult = findTrueTokens(tokens)
+        let qmc = new QuineMcCluskey(tokens, truthTableResult);
+        let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))
+        return qmcResult
 
     } catch (ex) {
         console.error('exception in toDnf ', ex)
         return [input]
     }
-
 }
 
-function getSimplifiedTerms(tokens) {
-    let logicExpression = ''
-    for (let i = 0; i < tokens.length; i++) {
-        logicExpression += tokens[i].getFullExpression()
+function qmcBackToAnds(tokens, expr) {
+    let expAry = []
+    let split = expr.split('x')
+    for (let i = 0; i < split.length; i++) {
+        if (!split[i]) continue;
+        let isNegated = split[i].includes('!')
+        let id = parseInt(split[i].replace(/!|x/g, ''))
+        expAry.push(getTokenById(tokens, id).getRebuiltExpression(isNegated))
     }
 
-    return simplify(logicExpression)
+    if (expAry.length === 1) {
+        return unescapeSemiColonValues(expAry.join(', '))
+    } else {
+        return unescapeSemiColonValues(`And(${expAry.join(', ')})`)
+    }
 }
 
-function createAndConditions(tokens, terms) {
-    return terms.map(function (term) {
-        let expAry = []
-        for (let i = 0; i < term.length; i++) {
-            let token = tokens.filter(x => x.placeHolder == term[i])
-            if (term[i + 1] === "'") {
-                expAry.push(token[0].getRebuiltExpression(true))
-                i++
-            } else {
-                expAry.push(token[0].getRebuiltExpression(false))
-            }
-
-        }
-        if (term.length === 1) {
-            return unescapeSemiColonValues(expAry.join(', '))
-        } else {
-            return unescapeSemiColonValues(`And(${expAry.join(', ')})`)
-        }
-
-    })
-
+function getTokenById(tokens, id) {
+    return tokens.filter(x => x.id === id)[0]
 }
-
-
-
 
 function prepareTokens(input) {
-    input = removeUnnecessaryParenthesis(input)
+    //input = removeUnnecessaryParenthesis(input)
     input = escapeSemiColonValues(input)
     let parts = input.split(firstSplitRegex)
     let objTokens = []
@@ -88,9 +73,7 @@ function prepareTokens(input) {
         if (!isExpression(parts[i])) {
             nonExprCharHolder += parts[i]
         } else if (isExpression(parts[i])) {
-            var currentPlaceholder = getNextPlaceholder()
-            expDict[currentPlaceholder] = parts[i]
-            objTokens.push(new Token(parts[i], currentPlaceholder, nonExprCharHolder))
+            objTokens.push(new Token(parts[i], nonExprCharHolder))
             nonExprCharHolder = ''
         }
     }
@@ -100,19 +83,103 @@ function prepareTokens(input) {
         objTokens[objTokens.length - 1].rhSideChars = nonExprCharHolder
     }
 
+    //assign each token an id in desc order
+    for (let x = 0; x < objTokens.length; x++) {
+        objTokens[objTokens.length - x - 1].id = x
+    }
+
     return objTokens
 }
 
 
 
-function isExpression(token) {
-    return (token != '(' && token != ')' && token != '&&' && token != '||')
+function findTrueTokens(tokens) {
+    let tokenSets = []
+    let row = []
+    let truthTableResult = []
+    let truthTable = []
+    //truthTable.push(getLetters(tokens))
+
+    for (let i = 0, iter = new TruthTableIterator(tokens.length); iter.hasNext(); i++) {
+        iter.next(tokens);
+        let result = evalTokens(tokens)
+        truthTableResult.push(result === true ? 1 : 0)
+        // truthTable.push(getValues(tokens, result))
+        // tokenSets.push(copyTokens(tokens, result))
+    }
+
+    //  printTruthTable(truthTable, tokens)
+    return truthTableResult
 }
 
-function getNextPlaceholder() {
-    placeholderIndex++
-    if (placeholderIndex > placeholders.length) throw 'placeholder overflow'
-    return placeholders[placeholderIndex]
+function evalTokens(tokens) {
+    let evalStatement = ''
+    for (let i = 0; i < tokens.length; i++) {
+        evalStatement += tokens[i].getEval()
+    }
+    //console.log(evalStatement, '==', eval(evalStatement))
+    return eval(evalStatement)
+}
+
+function TruthTableIterator(tokensLength) {
+    let iterations = Math.pow(2, tokensLength);
+    let index = 0;
+
+    this.hasNext = function () {
+        return index < iterations;
+    }
+
+    this.next = function (tokens) {
+        let n = index;
+        for (let i = tokensLength - 1; i >= 0; i--) {
+            tokens[i].valueBit = n & 1;
+            tokens[i].value = tokens[i].valueBit == 1
+            n = n >> 1;
+        }
+        index++;
+    }
+}
+
+function getLetters(tokens) {
+    if (!DEBUG) return []
+    let letters = []
+    for (let i = 0; i < tokens.length; i++) {
+        letters.push(tokens[i].placeHolder)
+    }
+    letters.push('result')
+    return letters
+}
+
+function getValues(tokens, result) {
+    if (!DEBUG) return []
+    let values = []
+    for (let i = 0; i < tokens.length; i++) {
+        values.push(tokens[i].value)
+    }
+    values.push(result)
+    return values
+}
+
+function printTruthTable(truthTable) {
+    if (!DEBUG) return
+    console.table(truthTable)
+}
+
+
+function copyTokens(arrayOfTokens, result) {
+    if (!arrayOfTokens || arrayOfTokens.length === 0) return arrayOfTokens
+
+    let tokenSet = arrayOfTokens.map(function (token) {
+        return Object.assign(Object.create(Object.getPrototypeOf(token)), token)
+    })
+    tokenSet.result = result
+    tokenSet.valueBit = result === true ? 1 : 0
+
+    return tokenSet
+}
+
+function isExpression(token) {
+    return (token != '(' && token != ')' && token != '&&' && token != '||')
 }
 
 const equalsEqualsSearchStr = /;value==/g
@@ -143,26 +210,6 @@ function unescapeSemiColonValues(str) {
     str = str.replace(notContainsPh, ';value!⊃')
     return str
 }
-
-// function removeUnnecessaryParenthesis(str) {
-//     var i = 0;
-//     return (function recur(b) {
-//         var c, s = '';
-//         while (c = str.charAt(i++)) {          // Keep getting chars
-//             if (c == ')') return s;            // End of inner part
-//             if (c == '(') {
-//                 var s1 = recur(true),         // Get inner part
-//                     s2 = recur();             // Get following part
-//                 return s + (!b || s2 ? '(' + s1 + ')' : s1) + s2;
-//             }
-//             s += c;                           // Add current char
-//             b = false;
-//         }
-//         return s;
-//     })();
-// }
-
-
 
 function removeUnnecessaryParenthesis(str) {
     if (!str || str.length < 2) return str
@@ -203,5 +250,8 @@ function removeUnnecessaryParenthesis(str) {
     return str.join('')
 }
 
+
+// let inputStr = 'clly==g8 or comp==abc and asd==123 or fff!=sss and fda⊃⊃ggg or gas!⊃kkf and eee==uuu or jjj!=aaa and ttt⊃⊃sss or kas==kok'
+// let res = toDnf(inputStr)
 
 module.exports = toDnf

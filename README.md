@@ -2,7 +2,8 @@
 
 https://github.com/IvanRave/logic-tree
 http://booleanbot.com/  uses this syntax a+(b'(c+d))
-https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/normalform/index.html
+https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/normalform/index.html //does not simplify
+https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/karnaughmap/  //perfect
 Quine-McCluskey
 https://www.dcode.fr/boolean-expressions-calculator  //pretty good
 

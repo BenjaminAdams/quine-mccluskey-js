@@ -4,11 +4,11 @@ const positiveSymbols = ['==', '⊃⊃']
 const negatedSymbols = ['!=', '!⊃']
 
 class Token {
-    constructor(token, currentPlaceholder, nonExprHolder) {
+    constructor(token, nonExprHolder) {
         let split = token.split(expressionSplitRegex)
 
         this.left = split[0] || ''
-        this.placeHolder = currentPlaceholder
+        //this.placeHolder = currentPlaceholder
         this.symbol = split[1] || ''
         this.positiveSymbol = this.getPositiveSymbol(this.symbol)
         this.negatedSymbol = this.getNegativeSymbol(this.symbol)
@@ -20,7 +20,16 @@ class Token {
     }
 
     getEval() {
-        return this.lhSideChars + this.value + this.rhSideChars
+        return this.lhSideChars + this.getCorrectValue() + this.rhSideChars
+    }
+
+    //if the condition is a negated symbol '!=' we want to flip flop the value from true/false and vice versa
+    getCorrectValue() {
+        if (positiveSymbols.includes(this.symbol)) {
+            return this.value
+        } else {
+            return !this.value
+        }
     }
 
     getFullExpression() {
@@ -37,17 +46,17 @@ class Token {
         return this.left + symbolForExp + this.right
     }
 
-    getSymbolNegation() {
-        if (positiveSymbols.includes(this.symbol)) {
-            return this.placeHolder
-        } else if (negatedSymbols.includes(this.symbol)) {
-            //return ` NOT(${this.placeHolder})`
-            //return ` !${this.placeHolder}`
-            return `${this.placeHolder}'`
-        } else {
-            return this.placeHolder
-        }
-    }
+    // getSymbolNegation() {
+    //     if (positiveSymbols.includes(this.symbol)) {
+    //         return this.placeHolder
+    //     } else if (negatedSymbols.includes(this.symbol)) {
+    //         //return ` NOT(${this.placeHolder})`
+    //         //return ` !${this.placeHolder}`
+    //         return `${this.placeHolder}'`
+    //     } else {
+    //         return this.placeHolder
+    //     }
+    // }
 
     getPositiveSymbol(symbol) {
         if (positiveSymbols.includes(symbol)) {

@@ -1,4 +1,4 @@
-process.env.DEBUG = true
+process.env.DEBUG = false
 var os = require('os');
 const fs = require('fs');
 const callPython = require('../tests/python/callPython.js')
