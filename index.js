@@ -217,44 +217,44 @@ function unescapeSemiColonValues(str) {
     return str
 }
 
-function removeUnnecessaryParenthesis(str) {
-    if (!str || str.length < 2) return str
-    let queue = []
-    let removals = []
+// function removeUnnecessaryParenthesis(str) {
+//     if (!str || str.length < 2) return str
+//     let queue = []
+//     let removals = []
 
-    for (let i = 0; i < str.length; i++) {
-        let a = str[i];
+//     for (let i = 0; i < str.length; i++) {
+//         let a = str[i];
 
-        if (a == '(') {
-            queue.push({ val: i, bool: false });
-        }
-        else if (a == ')') {
-            if (queue[queue.length - 1].bool) {
-                // remove top.int and i from string in a later step
-                removals.push(queue[queue.length - 1].val, i)
-            }
+//         if (a == '(') {
+//             queue.push({ val: i, bool: false });
+//         }
+//         else if (a == ')') {
+//             if (queue[queue.length - 1].bool) {
+//                 // remove top.int and i from string in a later step
+//                 removals.push(queue[queue.length - 1].val, i)
+//             }
 
-            queue.pop()
-            if (queue.length > 0) {
-                queue[queue.length - 1].bool = true;
-            }
+//             queue.pop()
+//             if (queue.length > 0) {
+//                 queue[queue.length - 1].bool = true;
+//             }
 
-        }
-        else if (queue.length > 0) {
-            queue[queue.length - 1].bool = false;
-        }
-    }
+//         }
+//         else if (queue.length > 0) {
+//             queue[queue.length - 1].bool = false;
+//         }
+//     }
 
-    let removedSoFar = 0
-    str = str.split('')
-    removals = removals.sort((a, b) => a - b)
-    for (let i = 0; i < removals.length; i++) {
-        str.splice(removals[i] - removedSoFar, 1)
-        removedSoFar++
-    }
+//     let removedSoFar = 0
+//     str = str.split('')
+//     removals = removals.sort((a, b) => a - b)
+//     for (let i = 0; i < removals.length; i++) {
+//         str.splice(removals[i] - removedSoFar, 1)
+//         removedSoFar++
+//     }
 
-    return str.join('')
-}
+//     return str.join('')
+// }
 
 
 //let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or kku==999 or eee==223 and (somethig===111 and asdasd==000) and asdasdasd==11111'

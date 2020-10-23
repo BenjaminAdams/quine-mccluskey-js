@@ -16,6 +16,26 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return counter;
     }
 
+    this.findMergeCandidate = function (imp1, imp2) {
+        let xor = -1;
+        for (let m in imp1.imp) {
+            for (let n in imp2.imp) {
+                let i1 = imp1.imp[m];
+                let i2 = imp2.imp[n];
+                //console.log(i1 + "<->" + i2);
+                xor = (i1 ^ i2) & (~imp1.bitMask);
+                if (bitCount(xor) === 1) {
+                    //console.log("found merge candidate" + i1 + "<->" + i2);
+                    return { found: true, xor: xor }
+                }
+                break;
+            }
+            break;
+        }
+        return { found: false, xor: xor }
+    }
+
+    //97% of CPU time is spent here in createImplicantGroups()
     this.createImplicantGroups = function () {
         let counter = 0;
         let lastIg = -1;
@@ -44,30 +64,15 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                         let imp2 = lastIg.group[j];
 
                         if (imp1.bitMask === imp2.bitMask) {
+                            let candidates = this.findMergeCandidate(imp1, imp2)
 
-                            let found = false;
-                            let xor = -1;
-                            for (let m in imp1.imp) {
-                                for (let n in imp2.imp) {
-                                    let i1 = imp1.imp[m];
-                                    let i2 = imp2.imp[n];
-                                    //console.log(i1 + "<->" + i2);
-                                    xor = (i1 ^ i2) & (~imp1.bitMask);
-                                    if (bitCount(xor) === 1) {
-                                        //console.log("found merge candidate" + i1 + "<->" + i2);
-                                        found = true;
-                                    }
-                                    break;
-                                }
-                                break;
-                            }
-                            if (found) {
+                            if (candidates.found) {
                                 imp1.isPrim = false;
                                 imp2.isPrim = false;
 
                                 let impl = new Implicant();
                                 impl.isPrim = true;
-                                impl.bitMask = imp1.bitMask | xor;
+                                impl.bitMask = imp1.bitMask | candidates.xor;
                                 for (let m in imp1.imp)
                                     impl.imp[m] = parseInt(m);
                                 for (let n in imp2.imp)
@@ -257,6 +262,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 
             if (remainingCount === 0) {
                 primTableFound = false; // break loop
+                break;
             } else {
                 if (!primTableFound) {
                     cyclicCoveringFound = true;
@@ -320,7 +326,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                                 one = one << 1;
                             }
 
-                            // minTerm = "(" + minTerm + ")";
+
                             if (primTerm.implicant.bitMask === Math.pow(2, this.noOfVars) - 1)
                                 minTerm = "1";
 
