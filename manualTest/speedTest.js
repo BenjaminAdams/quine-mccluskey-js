@@ -18,7 +18,8 @@ async function speedTest() {
 }
 
 function getNextVariable(i) {
-    return ` and ${i}xx==${i}xx`
+    // return ` and ${i}xx==${i}xx`
+    return ` or ${i}xx==${i}xx`
 
     let andOr = 'and'
     let eq = '=='

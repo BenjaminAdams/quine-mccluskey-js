@@ -35,17 +35,20 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return { found: false, xor: xor }
     }
 
-    // determine if this combination is already there
-    this.findInGroupMatch = function (group, imp) {
-        let res = _.findIndex(group, function (exist) {
-            return _.isEqual(imp, exist.imp)
+    //97% of CPU time is spent here in findInGroupMatch()
+    // determine if this combination of implicants is already in the group
+    this.findInGroupMatch = function (group, impl) {
+        let res = _.findIndex(group, function (existing) {
+            return existing.hash === impl.hash
+            //console.log(self.findInGroupMatchWasCalled++)
+            //  return _.isEqual(impl.imp, existing.imp)
         });
         return res > -1
     }
 
 
 
-    //97% of CPU time is spent here in createImplicantGroups()
+
     this.createImplicantGroups = function () {
         let counter = 0;
         let lastIg = -1;
@@ -62,6 +65,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                         let impl = new Implicant();
                         impl.imp[i] = i;
                         impl.isPrim = true;
+                        impl.calculateHash()
                         ig.group.push(impl);
                         continueLoop = true;
                     }
@@ -88,8 +92,8 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                                 for (let n in imp2.imp)
                                     impl.imp[n] = parseInt(n);
 
-                                // let foundMatch = false; // determine if this combination is already there
-                                let foundMatch = this.findInGroupMatch(ig.group, impl.imp)
+                                impl.calculateHash()
+                                let foundMatch = this.findInGroupMatch(ig.group, impl)
 
                                 if (!foundMatch) {
                                     ig.group.push(impl);
@@ -343,8 +347,6 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 function PrimTerm() {
     this.implicant = -1;
     this.termString = "";
-    this.color = [0, 0, 0];
-    this.coloredTermString = "";
     this.used = false;
     this.neededByVar = {}
 }
@@ -354,6 +356,17 @@ function Implicant() {
     this.isPrim = false;
     this.isOnlyDontCare = false;
     this.bitMask = 0;
+
+    this.calculateHash = function () {
+        this.hash = JSON.stringify(this.imp);
+        // let hash = '';
+        // for (let num in this.imp) {
+        //     hash += `_${num}_`
+        // }
+        // this.hash = hash
+    }
+
+
 }
 
 function ImplicantGroup() {

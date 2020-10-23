@@ -299,12 +299,11 @@ describe('toDnf', function () {
     it('Ten (and) conditions', async function () {
         let inputStr = 'xxx==g8 and yyy==abc and ggg==333 and kku==999 and eee==223 and lfx==g8 and fyy==abc and fgg==333 and fku==999 and fee==223'
         let res = toDnf(inputStr)
-        // assert.ok(res.includes('classification.family==g8'))
-        // assert.ok(res.includes('component.id==abc'))
-        // assert.strictEqual(res.length, 2)
+        assert.ok(res.includes("And(xxx==g8, yyy==abc, ggg==333, kku==999, eee==223, lfx==g8, fyy==abc, fgg==333, fku==999, fee==223)"))
+        assert.strictEqual(res.length, 1)
 
         let pythonRes = await callPython(inputStr)
-        // assert.strictEqual(pythonRes[0], 'Or(classification.family==g8, component.id==abc)')
+        assert.ok(pythonRes.includes("And(xxx==g8, yyy==abc, ggg==333, kku==999, eee==223, lfx==g8, fyy==abc, fgg==333, fku==999, fee==223)"))
         assert.strictEqual(pythonRes.length, 1)
     });
 
