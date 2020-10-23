@@ -1,5 +1,5 @@
 //Quine–McCluskey algorithm
-
+var _ = require('lodash');
 
 module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     this.noOfVars = noOfVars;
@@ -25,7 +25,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                 //console.log(i1 + "<->" + i2);
                 xor = (i1 ^ i2) & (~imp1.bitMask);
                 if (bitCount(xor) === 1) {
-                    //console.log("found merge candidate" + i1 + "<->" + i2);
+                    // console.log("found merge candidate" + i1 + "<->" + i2);
                     return { found: true, xor: xor }
                 }
                 break;
@@ -34,6 +34,16 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         }
         return { found: false, xor: xor }
     }
+
+    // determine if this combination is already there
+    this.findInGroupMatch = function (group, imp) {
+        let res = _.findIndex(group, function (exist) {
+            return _.isEqual(imp, exist.imp)
+        });
+        return res > -1
+    }
+
+
 
     //97% of CPU time is spent here in createImplicantGroups()
     this.createImplicantGroups = function () {
@@ -78,27 +88,9 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                                 for (let n in imp2.imp)
                                     impl.imp[n] = parseInt(n);
 
-                                let foundMatch = false; // determine if this combination is already there
-                                for (let k = 0; k < ig.group.length; k++) {
-                                    let exist = ig.group[k];
-                                    let isTheSame = true;
-                                    for (let m in impl.imp) {
-                                        let found = false;
-                                        for (let n in exist.imp) {
-                                            if (parseInt(m) === parseInt(n)) {
-                                                found = true;
-                                            }
-                                        }
-                                        if (!found) {
-                                            isTheSame = false;
-                                            break;
-                                        }
-                                    }
-                                    if (isTheSame) {
-                                        foundMatch = true;
-                                        break;
-                                    }
-                                }
+                                // let foundMatch = false; // determine if this combination is already there
+                                let foundMatch = this.findInGroupMatch(ig.group, impl.imp)
+
                                 if (!foundMatch) {
                                     ig.group.push(impl);
                                     continueLoop = true;
