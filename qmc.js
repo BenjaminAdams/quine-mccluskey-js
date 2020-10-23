@@ -1,58 +1,31 @@
 //Quine–McCluskey algorithm
 
 
-module.exports = function QuineMcCluskey(tokens, truthTableResult) {
-    this.cols = tokens.length + 1;
-    this.rows = Math.pow(2, tokens.length);
-    this.data = new QuineMcCluskeyDataCtrl();
-    this.data.allowDontCare = false;
-
-    this.setNoOfVars = function (vars) {
-        let c = parseInt(vars);
-        if (c < 1 && c > 6)
-            return;
-        this.cols = c + 1;
-        this.rows = Math.pow(2, c);
-        this.data.init(c);
-    };
-
-    this.setNoOfVars(tokens.length)
-    this.data.init(tokens.length)
-    this.data.tokens = tokens
+module.exports = function QuineMcCluskey(tokenLength, truthTableResult) {
+    this.data = new QuineMcCluskeyDataCtrl(tokenLength);
     this.data.setTruthTableResult(truthTableResult)
-
-
     return this.data.compute()
 }
 
 
 
-function QuineMcCluskeyDataCtrl() {
-    this.noOfVars = -1;
+function QuineMcCluskeyDataCtrl(noOfVars) {
+    this.noOfVars = noOfVars;
     this.funcdata = []
-    this.primTerms = []
-    this.implicantGroups = []
-    this.minimalTerm = "";
-    this.coloredMinimalTerm = "";
+    this.minimalTerm = "0";
+    this.coloredMinimalTerm = "0";
     this.minimalTermPrims = []
     this.primTermTables = []
     // this.petrickSolver = new PetrickMethod();
     this.petrickTermPrims = []
-    this.allowDontCare = false;
+    this.allowDontCare = false
 
-    this.init = function (no) {
-        this.noOfVars = no;
-        this.minimalTerm = "0";
-        this.coloredMinimalTerm = "0";
+    let noOfFuncData = Math.pow(2, this.noOfVars);
+    for (let i = 0; i < noOfFuncData; i++) {
+        this.funcdata.push(0);
+    }
 
-        let noOfFuncData = Math.pow(2, this.noOfVars);
-        for (let i = 0; i < noOfFuncData; i++) {
-            this.funcdata.push(0);
-        }
-
-        //this.petrickSolver.test();
-
-    };
+    //this.petrickSolver.test();
 
     this.setTruthTableResult = function (data) {
         this.funcdata = data
@@ -67,15 +40,11 @@ function QuineMcCluskeyDataCtrl() {
         return counter;
     }
 
-
-
-    this.compute = function () {
-        this.minimalTerm = "0";
-        this.coloredMinimalTerm = "0";
-
+    this.createImplicantGroups = function () {
         let counter = 0;
         let lastIg = -1;
         let continueLoop = true;
+        let implicantGroups = []
         while (continueLoop) {
 
             continueLoop = false;
@@ -159,13 +128,21 @@ function QuineMcCluskeyDataCtrl() {
                 }
             }
 
-            if (continueLoop) this.implicantGroups.push(ig);
+            if (continueLoop) implicantGroups.push(ig);
             lastIg = ig;
             counter++;
         }
+        return implicantGroups
+    }
+
+    this.compute = function () {
+        this.minimalTerm = "0";
+        this.coloredMinimalTerm = "0";
+
+        let implicantGroups = this.createImplicantGroups()
 
         // collect primterms
-        this.primTerms = this.collectPrimterms()
+        let primTerms = this.collectPrimterms(implicantGroups)
 
         // looking for essential prime implicants 
         let remaining = {}
@@ -177,7 +154,7 @@ function QuineMcCluskeyDataCtrl() {
 
 
         let primTableLoop = 0;
-        let primTableFound = (this.primTerms.length > 0);
+        let primTableFound = (primTerms.length > 0);
         let cyclicCoveringFound = false;
         let primTermTable;
         while (primTableFound) {
@@ -190,8 +167,8 @@ function QuineMcCluskeyDataCtrl() {
             }
 
             if (primTableLoop === 0) {
-                for (let j = 0; j < this.primTerms.length; j++) {
-                    primTermTable.remainingPrimTerms.push(this.primTerms[j]);
+                for (let j = 0; j < primTerms.length; j++) {
+                    primTermTable.remainingPrimTerms.push(primTerms[j]);
                 }
             } else {
                 // remove rows
@@ -397,10 +374,10 @@ function QuineMcCluskeyDataCtrl() {
         }
     }
 
-    this.collectPrimterms = function () {
+    this.collectPrimterms = function (implicantGroups) {
         let primTerms = []
-        for (let i = this.implicantGroups.length - 1; i >= 0; i--) {
-            let g = this.implicantGroups[i].group;
+        for (let i = implicantGroups.length - 1; i >= 0; i--) {
+            let g = implicantGroups[i].group;
 
             for (let j = 0; j < g.length; j++) {
                 if (g[j].isPrim) {

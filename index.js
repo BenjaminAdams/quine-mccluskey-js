@@ -20,7 +20,7 @@ function toDnf(input) {
         let tokens = prepareTokens(input)
         //let truthTableResult = [0, 0, 0, 1, 0, 0, 0, 0]
         let truthTableResult = findTrueTokens(tokens)
-        let qmc = new QuineMcCluskey(tokens, truthTableResult);
+        let qmc = new QuineMcCluskey(tokens.length, truthTableResult);
         let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))
         return qmcResult
 
