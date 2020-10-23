@@ -35,7 +35,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return { found: false, xor: xor }
     }
 
-    //97% of CPU time is spent here in findInGroupMatch()
+    //97% of CPU time is spent here in findInGroupMatch() and createImplicantGroups
     // determine if this combination of implicants is already in the group
     this.findInGroupMatch = function (group, impl) {
         let res = _.findIndex(group, function (existing) {
@@ -46,12 +46,12 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return res > -1
     }
 
+    this.howMany = 0
 
-
-
+    //very high CPU usage from this function!
     this.createImplicantGroups = function () {
         let counter = 0;
-        let lastIg = -1;
+        let lastIg = null;
         let continueLoop = true;
         let implicantGroups = []
         while (continueLoop) {
@@ -71,38 +71,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                     }
                 }
             } else {
-
-                for (let i = 0; i < lastIg.group.length; i++) {
-                    for (let j = i + 1; j < lastIg.group.length; j++) {
-                        let imp1 = lastIg.group[i];
-                        let imp2 = lastIg.group[j];
-
-                        if (imp1.bitMask === imp2.bitMask) {
-                            let candidates = this.findMergeCandidate(imp1, imp2)
-
-                            if (candidates.found) {
-                                imp1.isPrim = false;
-                                imp2.isPrim = false;
-
-                                let impl = new Implicant();
-                                impl.isPrim = true;
-                                impl.bitMask = imp1.bitMask | candidates.xor;
-                                for (let m in imp1.imp)
-                                    impl.imp[m] = parseInt(m);
-                                for (let n in imp2.imp)
-                                    impl.imp[n] = parseInt(n);
-
-                                impl.calculateHash()
-                                let foundMatch = this.findInGroupMatch(ig.group, impl)
-
-                                if (!foundMatch) {
-                                    ig.group.push(impl);
-                                    continueLoop = true;
-                                }
-                            }
-                        }
-                    }
-                }
+                continueLoop = this.compareLastGroup(lastIg, ig)
             }
 
             if (continueLoop) implicantGroups.push(ig);
@@ -110,6 +79,44 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
             counter++;
         }
         return implicantGroups
+    }
+
+    this.compareLastGroup = function (lastIg, ig) {
+        let continueLoop = false
+        for (let i = 0; i < lastIg.group.length; i++) {
+            for (let j = i + 1; j < lastIg.group.length; j++) {
+                let imp1 = lastIg.group[i];
+                let imp2 = lastIg.group[j];
+                // console.log(this.howMany++)
+
+                if (imp1.bitMask !== imp2.bitMask) continue;
+
+                let candidates = this.findMergeCandidate(imp1, imp2)
+
+                if (candidates.found) {
+                    imp1.isPrim = false;
+                    imp2.isPrim = false;
+
+                    let impl = new Implicant();
+                    impl.isPrim = true;
+                    impl.bitMask = imp1.bitMask | candidates.xor;
+                    for (let m in imp1.imp)
+                        impl.imp[m] = parseInt(m);
+                    for (let n in imp2.imp)
+                        impl.imp[n] = parseInt(n);
+
+                    impl.calculateHash()
+                    let foundMatch = this.findInGroupMatch(ig.group, impl)
+
+                    if (!foundMatch) {
+                        ig.group.push(impl);
+                        continueLoop = true;
+                    }
+                }
+
+            }
+        }
+        return continueLoop
     }
 
     this.compute = function () {
