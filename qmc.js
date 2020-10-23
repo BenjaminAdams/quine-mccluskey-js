@@ -1,35 +1,11 @@
 //Quine–McCluskey algorithm
 
 
-module.exports = function QuineMcCluskey(tokenLength, truthTableResult) {
-    this.data = new QuineMcCluskeyDataCtrl(tokenLength);
-    this.data.setTruthTableResult(truthTableResult)
-    return this.data.compute()
-}
-
-
-
-function QuineMcCluskeyDataCtrl(noOfVars) {
+module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     this.noOfVars = noOfVars;
-    this.funcdata = []
-    this.minimalTerm = "0";
-    this.coloredMinimalTerm = "0";
+    this.funcdata = truthTableResult
     this.minimalTermPrims = []
     this.primTermTables = []
-    // this.petrickSolver = new PetrickMethod();
-    this.petrickTermPrims = []
-    this.allowDontCare = false
-
-    let noOfFuncData = Math.pow(2, this.noOfVars);
-    for (let i = 0; i < noOfFuncData; i++) {
-        this.funcdata.push(0);
-    }
-
-    //this.petrickSolver.test();
-
-    this.setTruthTableResult = function (data) {
-        this.funcdata = data
-    }
 
     function bitCount(value) {
         let counter = 0;
@@ -137,7 +113,6 @@ function QuineMcCluskeyDataCtrl(noOfVars) {
 
     this.compute = function () {
         this.minimalTerm = "0";
-        this.coloredMinimalTerm = "0";
 
         let implicantGroups = this.createImplicantGroups()
 
@@ -294,77 +269,6 @@ function QuineMcCluskeyDataCtrl(noOfVars) {
 
         let solutionFound = true;
 
-        // Petrick's Method
-        // if (cyclicCoveringFound) {
-        //     //console.log("Cyclic covering found");
-        //     console.error(`petrickSolver is commented out, was not sure if I needed it or not`)
-
-        //     let andArray = []
-
-        //     for (let r in remaining) {
-        //         let ii = remaining[r];
-        //         let orArray = []
-
-        //         for (let k = 0; k < primTermTable.remainingPrimTerms.length; k++) {
-        //             let imp = primTermTable.remainingPrimTerms[k].implicant.imp;
-        //             if (ii in imp) {
-        //                 let monom = {}
-        //                 monom[k] = k;
-        //                 orArray.push(monom);
-        //             }
-        //         }
-        //         andArray.push(orArray);
-        //     }
-
-        //     solutionFound = this.petrickSolver.solve(andArray);
-
-        //     if (solutionFound) {
-        //         let solutions = this.petrickSolver.solution[0];
-
-        //         let bestSolution = -1;
-        //         let bestCount = 10000000;
-        //         let bestVarCount = 10000000;
-        //         for (let i = 0; i < solutions.length; i++) {
-        //             let count = 0;
-        //             for (let j in solutions[i]) {
-        //                 count++;
-        //             }
-        //             if (count <= bestCount) { // first sort accoring to monom length
-
-        //                 let foundBest = true;
-        //                 if (count === bestCount) {
-        //                     let bestVarCountNew = 0;
-        //                     for (let j in solutions[i]) {
-        //                         for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
-        //                             bestVarCountNew++;
-        //                         }
-        //                     }
-        //                     if (bestVarCountNew >= bestVarCount)
-        //                         foundBest = false;
-        //                 }
-
-        //                 if (foundBest) {
-        //                     bestCount = count;
-        //                     bestSolution = i;
-        //                     bestVarCount = 0;
-        //                     for (let j in solutions[bestSolution]) {
-        //                         for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
-        //                             bestVarCount++;
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         //console.log("Best solution " + bestSolution);
-
-        //         let best = solutions[bestSolution];
-        //         for (let b in best) {
-        //             let addPrimTerm = primTermTable.remainingPrimTerms[best[b]];
-        //             this.minimalTermPrims.push(addPrimTerm);
-        //             this.petrickTermPrims.push(addPrimTerm);
-        //         }
-        //     }
-        // }
 
         if (solutionFound) {
             return this.minimalTermPrims.map(x => x.termString);
@@ -431,6 +335,8 @@ function QuineMcCluskeyDataCtrl(noOfVars) {
         }
         return primTerms
     }
+
+    return this.compute()
 }
 
 
