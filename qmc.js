@@ -36,20 +36,14 @@ function QuineMcCluskeyDataCtrl() {
     this.coloredMinimalTerm = "";
     this.minimalTermPrims = []
     this.primTermTables = []
-    this.petrickSolver = new PetrickMethod();
+    // this.petrickSolver = new PetrickMethod();
     this.petrickTermPrims = []
     this.allowDontCare = false;
 
     this.init = function (no) {
         this.noOfVars = no;
-        this.funcdata.length = 0;
-        this.primTerms.length = 0;
-        this.implicantGroups.length = 0;
         this.minimalTerm = "0";
         this.coloredMinimalTerm = "0";
-        this.minimalTermPrims.length = 0;
-        this.primTermTables.length = 0;
-        this.petrickTermPrims.length = 0;
 
         let noOfFuncData = Math.pow(2, this.noOfVars);
         for (let i = 0; i < noOfFuncData; i++) {
@@ -64,12 +58,6 @@ function QuineMcCluskeyDataCtrl() {
         this.funcdata = data
     }
 
-    this.setFuncData = function (i, val) {
-        if (i < 0 || i >= this.funcdata.length)
-            return;
-        this.funcdata[i] = val;
-    };
-
     function bitCount(value) {
         let counter = 0;
         while (value > 0) {
@@ -79,14 +67,11 @@ function QuineMcCluskeyDataCtrl() {
         return counter;
     }
 
+
+
     this.compute = function () {
-        this.primTerms.length = 0;
-        this.implicantGroups.length = 0;
         this.minimalTerm = "0";
         this.coloredMinimalTerm = "0";
-        this.minimalTermPrims.length = 0;
-        this.primTermTables.length = 0;
-        this.petrickTermPrims.length = 0;
 
         let counter = 0;
         let lastIg = -1;
@@ -180,62 +165,7 @@ function QuineMcCluskeyDataCtrl() {
         }
 
         // collect primterms
-        this.primTerms.length = 0;
-        this.minimalTermPrims.length = 0;
-
-        for (let i = this.implicantGroups.length - 1; i >= 0; i--) {
-            let g = this.implicantGroups[i].group;
-
-            for (let j = 0; j < g.length; j++) {
-                if (g[j].isPrim) {
-
-                    // prim terms introduced by don't cares
-                    // must have at least one 1
-                    let containsOne = false;
-                    let allFuncPrimTerm = g[j].imp;
-                    for (let kk in allFuncPrimTerm) {
-                        let k = allFuncPrimTerm[kk];
-                        if (this.funcdata[k] === 1) {
-                            containsOne = true;
-                        }
-                    }
-
-                    if (!containsOne) {
-                        g[j].isOnlyDontCare = true;
-                    } else {
-                        let primTerm = new PrimTerm();
-                        primTerm.implicant = g[j];
-
-                        // extract minTerm as string
-                        for (let thisVal in primTerm.implicant.imp) {
-                            let minTerm = "";
-                            let one = 1;
-                            let needed = (~primTerm.implicant.bitMask);
-                            for (let v = 0; v < this.noOfVars; v++) {
-                                if ((needed & one) === one) {
-                                    if ((thisVal & one) === one) {
-                                        minTerm = "x" + v + minTerm;
-                                    } else {
-                                        minTerm = "x!" + v + minTerm;
-                                    }
-                                }
-                                one = one << 1;
-                            }
-
-                            // minTerm = "(" + minTerm + ")";
-                            if (primTerm.implicant.bitMask === Math.pow(2, this.noOfVars) - 1)
-                                minTerm = "1";
-
-                            primTerm.termString = minTerm;
-                            break;
-                        }
-
-                        this.primTerms.push(primTerm);
-                    }
-                }
-            }
-        }
-
+        this.primTerms = this.collectPrimterms()
 
         // looking for essential prime implicants 
         let remaining = {}
@@ -245,7 +175,7 @@ function QuineMcCluskeyDataCtrl() {
             }
         }
 
-        this.primTermTables.length = 0;
+
         let primTableLoop = 0;
         let primTableFound = (this.primTerms.length > 0);
         let cyclicCoveringFound = false;
@@ -378,6 +308,7 @@ function QuineMcCluskeyDataCtrl() {
             } else {
                 if (!primTableFound) {
                     cyclicCoveringFound = true;
+                    console.error(`petrickSolver is commented out, was not sure if I needed it or not`)
                 }
             }
 
@@ -387,264 +318,146 @@ function QuineMcCluskeyDataCtrl() {
         let solutionFound = true;
 
         // Petrick's Method
-        if (cyclicCoveringFound) {
-            //console.log("Cyclic covering found");
+        // if (cyclicCoveringFound) {
+        //     //console.log("Cyclic covering found");
+        //     console.error(`petrickSolver is commented out, was not sure if I needed it or not`)
 
-            let andArray = []
+        //     let andArray = []
 
-            for (let r in remaining) {
-                let ii = remaining[r];
-                let orArray = []
+        //     for (let r in remaining) {
+        //         let ii = remaining[r];
+        //         let orArray = []
 
-                for (let k = 0; k < primTermTable.remainingPrimTerms.length; k++) {
-                    let imp = primTermTable.remainingPrimTerms[k].implicant.imp;
-                    if (ii in imp) {
-                        let monom = {}
-                        monom[k] = k;
-                        orArray.push(monom);
-                    }
-                }
-                andArray.push(orArray);
-            }
+        //         for (let k = 0; k < primTermTable.remainingPrimTerms.length; k++) {
+        //             let imp = primTermTable.remainingPrimTerms[k].implicant.imp;
+        //             if (ii in imp) {
+        //                 let monom = {}
+        //                 monom[k] = k;
+        //                 orArray.push(monom);
+        //             }
+        //         }
+        //         andArray.push(orArray);
+        //     }
 
-            solutionFound = this.petrickSolver.solve(andArray);
+        //     solutionFound = this.petrickSolver.solve(andArray);
 
-            if (solutionFound) {
-                let solutions = this.petrickSolver.solution[0];
+        //     if (solutionFound) {
+        //         let solutions = this.petrickSolver.solution[0];
 
-                let bestSolution = -1;
-                let bestCount = 10000000;
-                let bestVarCount = 10000000;
-                for (let i = 0; i < solutions.length; i++) {
-                    let count = 0;
-                    for (let j in solutions[i]) {
-                        count++;
-                    }
-                    if (count <= bestCount) { // first sort accoring to monom length
+        //         let bestSolution = -1;
+        //         let bestCount = 10000000;
+        //         let bestVarCount = 10000000;
+        //         for (let i = 0; i < solutions.length; i++) {
+        //             let count = 0;
+        //             for (let j in solutions[i]) {
+        //                 count++;
+        //             }
+        //             if (count <= bestCount) { // first sort accoring to monom length
 
-                        let foundBest = true;
-                        if (count === bestCount) {
-                            let bestVarCountNew = 0;
-                            for (let j in solutions[i]) {
-                                for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
-                                    bestVarCountNew++;
-                                }
-                            }
-                            if (bestVarCountNew >= bestVarCount)
-                                foundBest = false;
-                        }
+        //                 let foundBest = true;
+        //                 if (count === bestCount) {
+        //                     let bestVarCountNew = 0;
+        //                     for (let j in solutions[i]) {
+        //                         for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
+        //                             bestVarCountNew++;
+        //                         }
+        //                     }
+        //                     if (bestVarCountNew >= bestVarCount)
+        //                         foundBest = false;
+        //                 }
 
-                        if (foundBest) {
-                            bestCount = count;
-                            bestSolution = i;
-                            bestVarCount = 0;
-                            for (let j in solutions[bestSolution]) {
-                                for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
-                                    bestVarCount++;
-                                }
-                            }
-                        }
-                    }
-                }
-                //console.log("Best solution " + bestSolution);
+        //                 if (foundBest) {
+        //                     bestCount = count;
+        //                     bestSolution = i;
+        //                     bestVarCount = 0;
+        //                     for (let j in solutions[bestSolution]) {
+        //                         for (let v in primTermTable.remainingPrimTerms[j].implicant.imp) {
+        //                             bestVarCount++;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         //console.log("Best solution " + bestSolution);
 
-                let best = solutions[bestSolution];
-                for (let b in best) {
-                    let addPrimTerm = primTermTable.remainingPrimTerms[best[b]];
-                    this.minimalTermPrims.push(addPrimTerm);
-                    this.petrickTermPrims.push(addPrimTerm);
-                }
-            }
-        }
+        //         let best = solutions[bestSolution];
+        //         for (let b in best) {
+        //             let addPrimTerm = primTermTable.remainingPrimTerms[best[b]];
+        //             this.minimalTermPrims.push(addPrimTerm);
+        //             this.petrickTermPrims.push(addPrimTerm);
+        //         }
+        //     }
+        // }
 
         if (solutionFound) {
             return this.minimalTermPrims.map(x => x.termString);
         } else {
-            this.minimalTerm = 'Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)';
-            this.coloredMinimalTerm = 'Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)';
-            return this.minimalTerm
+            console.error('Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)')
+            return []
         }
-    };
+    }
+
+    this.collectPrimterms = function () {
+        let primTerms = []
+        for (let i = this.implicantGroups.length - 1; i >= 0; i--) {
+            let g = this.implicantGroups[i].group;
+
+            for (let j = 0; j < g.length; j++) {
+                if (g[j].isPrim) {
+
+                    // prim terms introduced by don't cares
+                    // must have at least one 1
+                    let containsOne = false;
+                    let allFuncPrimTerm = g[j].imp;
+                    for (let kk in allFuncPrimTerm) {
+                        let k = allFuncPrimTerm[kk];
+                        if (this.funcdata[k] === 1) {
+                            containsOne = true;
+                            break;
+                        }
+                    }
+
+                    if (!containsOne) {
+                        g[j].isOnlyDontCare = true;
+                    } else {
+                        let primTerm = new PrimTerm();
+                        primTerm.implicant = g[j];
+
+                        // extract minTerm as string
+                        for (let thisVal in primTerm.implicant.imp) {
+                            let minTerm = "";
+                            let one = 1;
+                            let needed = (~primTerm.implicant.bitMask);
+                            for (let v = 0; v < this.noOfVars; v++) {
+                                if ((needed & one) === one) {
+                                    if ((thisVal & one) === one) {
+                                        minTerm = "x" + v + minTerm;
+                                    } else {
+                                        minTerm = "x!" + v + minTerm;
+                                    }
+                                }
+                                one = one << 1;
+                            }
+
+                            // minTerm = "(" + minTerm + ")";
+                            if (primTerm.implicant.bitMask === Math.pow(2, this.noOfVars) - 1)
+                                minTerm = "1";
+
+                            primTerm.termString = minTerm;
+                            break;
+                        }
+
+                        primTerms.push(primTerm);
+                    }
+                }
+            }
+        }
+        return primTerms
+    }
 }
 
 
 
-
-function PetrickMethod() {
-    this.problem;
-    this.maxProblemSize = 100;
-    this.solution;
-    this.log = "";
-    let that = this;
-
-    this.solve = function (eq) {
-
-        this.problem = eq;
-        this.log = "";
-
-        //printEqnArray(eq);
-        printEqnArrayFancy(eq);
-
-        // multiply out
-        let andArray = eq;
-        let loopCounter = 0;
-        while (andArray.length > 1) {
-            let newAndArray = []
-            for (let i = 1; i < andArray.length; i += 2) {
-
-                let orTermA = andArray[i - 1];
-                let orTermB = andArray[i];
-                let newOrArray = []
-                for (let a = 0; a < orTermA.length; a++) {
-                    for (let b = 0; b < orTermB.length; b++) {
-                        let monom1 = orTermA[a];
-                        let monom2 = orTermB[b];
-                        let resultingMonom = {}
-                        for (let m in monom1) {
-                            resultingMonom[monom1[m]] = monom1[m];
-                        }
-                        for (let n in monom2) {
-                            resultingMonom[monom2[n]] = monom2[n];
-                        }
-                        newOrArray.push(resultingMonom);
-                    }
-                }
-
-                newAndArray.push(newOrArray);
-            }
-            // if uneven copy last and-term
-            if (andArray.length % 2 === 1) {
-                newAndArray.push(andArray[andArray.length - 1]);
-            }
-            //printEqnArray(newAndArray);
-            printEqnArrayFancy(newAndArray);
-
-            andArray.length = 0;
-            // simplify or-term
-            for (let i = 0; i < newAndArray.length; i++) {
-                let orTerm = newAndArray[i];
-                let newOrTerm = simplifyOrTerm(orTerm);
-                if (newOrTerm.length > 0) {
-                    andArray.push(newOrTerm);
-                }
-            }
-
-            let problemSize = eqnArrayProblemSize(andArray);
-            if (problemSize > this.maxProblemSize) {
-                console.log("Error: The cyclic covering problem is too large to be solved with Petrick's method (increase maxProblemSize). Size=" + problemSize);
-                return false;
-            }
-
-            //printEqnArray(andArray);
-            printEqnArrayFancy(andArray);
-            loopCounter++;
-        }
-        this.solution = andArray;
-        return true;
-    };
-
-    function simplifyOrTerm(orTerm) {
-        // find a monom that is the same or simpler than another one
-        let newOrTerm = []
-        let markedForDeletion = {}
-        for (let a = 0; a < orTerm.length; a++) {
-            let keepA = true;
-            let monomA = orTerm[a];
-            for (let b = a + 1; b < orTerm.length && keepA; b++) {
-                let monomB = orTerm[b];
-                let overlapBoverA = 0;
-                let lengthA = 0;
-                for (let m in monomA) {
-                    if (monomB[m] in monomA) {
-                        overlapBoverA++;
-                    }
-                    lengthA++;
-                }
-
-                let overlapAoverB = 0;
-                let lengthB = 0;
-                for (let m in monomB) {
-                    if (monomA[m] in monomB) {
-                        overlapAoverB++;
-                    }
-                    lengthB++;
-                }
-
-                if (overlapBoverA === lengthB) {
-                    keepA = false;
-                }
-
-                if (lengthA < lengthB && overlapAoverB === lengthA) {
-                    markedForDeletion[b] = b;
-                }
-
-            }
-            if (keepA) {
-                if (a in markedForDeletion) {
-                    // do nothing
-                } else
-                    newOrTerm.push(orTerm[a]);
-            }
-        }
-        return newOrTerm;
-    }
-
-
-    function printEqnArrayFancy(andArray) {
-        let str = "";
-        for (let i = 0; i < andArray.length; i++) {
-            let first = true;
-            str += "(";
-            let orArray = andArray[i];
-            for (let j = 0; j < orArray.length; j++) {
-                if (!first)
-                    str += " &or; ";
-                let monom = orArray[j];
-                for (let k in monom) {
-                    str += "<i>p</i><sub><small>" + monom[k] + "</small></sub>";
-                }
-                first = false;
-            }
-            str += ")";
-        }
-        if (that.log.length > 0) {
-            that.log += "<p>&hArr;&nbsp;" + str + "</p>";
-        } else {
-            that.log += "<p>" + str + "</p>";
-        }
-    }
-
-    function eqnArrayProblemSize(andArray) {
-        let monomCounter = 0;
-        for (let i = 0; i < andArray.length; i++) {
-            let orArray = andArray[i];
-            monomCounter += orArray.length;
-        }
-        return monomCounter;
-    }
-
-
-    function printEqnArray(andArray) {
-        let str = "";
-        for (let i = 0; i < andArray.length; i++) {
-            let first = true;
-            str += "(";
-            let orArray = andArray[i];
-            for (let j = 0; j < orArray.length; j++) {
-                if (!first)
-                    str += " or ";
-                let monom = orArray[j];
-                for (let k in monom) {
-                    str += monom[k];
-                }
-                first = false;
-            }
-            str += ")";
-        }
-        console.log(str);
-    }
-
-}
 
 function PrimTerm() {
     this.implicant = -1;
@@ -677,4 +490,144 @@ function PrimTermTable(ord) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function PetrickMethod() {
+//     this.problem;
+//     this.maxProblemSize = 100;
+//     this.solution;
+//     this.log = "";
+//     let that = this;
+
+//     this.solve = function (eq) {
+
+//         this.problem = eq;
+//         this.log = "";
+
+//         // multiply out
+//         let andArray = eq;
+//         let loopCounter = 0;
+//         while (andArray.length > 1) {
+//             let newAndArray = []
+//             for (let i = 1; i < andArray.length; i += 2) {
+
+//                 let orTermA = andArray[i - 1];
+//                 let orTermB = andArray[i];
+//                 let newOrArray = []
+//                 for (let a = 0; a < orTermA.length; a++) {
+//                     for (let b = 0; b < orTermB.length; b++) {
+//                         let monom1 = orTermA[a];
+//                         let monom2 = orTermB[b];
+//                         let resultingMonom = {}
+//                         for (let m in monom1) {
+//                             resultingMonom[monom1[m]] = monom1[m];
+//                         }
+//                         for (let n in monom2) {
+//                             resultingMonom[monom2[n]] = monom2[n];
+//                         }
+//                         newOrArray.push(resultingMonom);
+//                     }
+//                 }
+
+//                 newAndArray.push(newOrArray);
+//             }
+//             // if uneven copy last and-term
+//             if (andArray.length % 2 === 1) {
+//                 newAndArray.push(andArray[andArray.length - 1]);
+//             }
+
+
+//             // simplify or-term
+//             for (let i = 0; i < newAndArray.length; i++) {
+//                 let orTerm = newAndArray[i];
+//                 let newOrTerm = simplifyOrTerm(orTerm);
+//                 if (newOrTerm.length > 0) {
+//                     andArray.push(newOrTerm);
+//                 }
+//             }
+
+//             let problemSize = eqnArrayProblemSize(andArray);
+//             if (problemSize > this.maxProblemSize) {
+//                 console.log("Error: The cyclic covering problem is too large to be solved with Petrick's method (increase maxProblemSize). Size=" + problemSize);
+//                 return false;
+//             }
+
+//             loopCounter++;
+//         }
+//         this.solution = andArray;
+//         return true;
+//     };
+
+//     function simplifyOrTerm(orTerm) {
+//         // find a monom that is the same or simpler than another one
+//         let newOrTerm = []
+//         let markedForDeletion = {}
+//         for (let a = 0; a < orTerm.length; a++) {
+//             let keepA = true;
+//             let monomA = orTerm[a];
+//             for (let b = a + 1; b < orTerm.length && keepA; b++) {
+//                 let monomB = orTerm[b];
+//                 let overlapBoverA = 0;
+//                 let lengthA = 0;
+//                 for (let m in monomA) {
+//                     if (monomB[m] in monomA) {
+//                         overlapBoverA++;
+//                     }
+//                     lengthA++;
+//                 }
+
+//                 let overlapAoverB = 0;
+//                 let lengthB = 0;
+//                 for (let m in monomB) {
+//                     if (monomA[m] in monomB) {
+//                         overlapAoverB++;
+//                     }
+//                     lengthB++;
+//                 }
+
+//                 if (overlapBoverA === lengthB) {
+//                     keepA = false;
+//                 }
+
+//                 if (lengthA < lengthB && overlapAoverB === lengthA) {
+//                     markedForDeletion[b] = b;
+//                 }
+
+//             }
+//             if (keepA) {
+//                 if (a in markedForDeletion) {
+//                     // do nothing
+//                 } else
+//                     newOrTerm.push(orTerm[a]);
+//             }
+//         }
+//         return newOrTerm;
+//     }
+
+//     function eqnArrayProblemSize(andArray) {
+//         let monomCounter = 0;
+//         for (let i = 0; i < andArray.length; i++) {
+//             let orArray = andArray[i];
+//             monomCounter += orArray.length;
+//         }
+//         return monomCounter;
+//     }
+// }
 
