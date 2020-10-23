@@ -29,15 +29,15 @@ module.exports = function QuineMcCluskey(tokens, truthTableResult) {
 
 function QuineMcCluskeyDataCtrl() {
     this.noOfVars = -1;
-    this.funcdata = new Array;
-    this.primTerms = new Array;
-    this.implicantGroups = new Array;
+    this.funcdata = []
+    this.primTerms = []
+    this.implicantGroups = []
     this.minimalTerm = "";
     this.coloredMinimalTerm = "";
-    this.minimalTermPrims = new Array;
-    this.primTermTables = new Array;
+    this.minimalTermPrims = []
+    this.primTermTables = []
     this.petrickSolver = new PetrickMethod();
-    this.petrickTermPrims = new Array;
+    this.petrickTermPrims = []
     this.allowDontCare = false;
 
     this.init = function (no) {
@@ -253,7 +253,7 @@ function QuineMcCluskeyDataCtrl() {
 
 
         // looking for essential prime implicants 
-        var remaining = new Object();
+        var remaining = {}
         for (var i = 0; i < this.funcdata.length; i++) {
             if (this.funcdata[i] === 1) {
                 remaining[i] = i;
@@ -286,7 +286,7 @@ function QuineMcCluskeyDataCtrl() {
 
                         var superseded = false;
                         var impA = prevTable.remainingPrimTerms[k].implicant.imp;
-                        var varCover = new Object;
+                        var varCover = {}
                         var countA = 0;
                         for (var r in remaining) {
                             var v = remaining[r];
@@ -339,7 +339,7 @@ function QuineMcCluskeyDataCtrl() {
                 this.primTermTables.push(primTermTable);
                 var currentTerms = primTermTable.remainingPrimTerms;
 
-                var toBeRemoved = new Object();
+                var toBeRemoved = {}
 
                 for (var r in remaining) {
                     var i = remaining[r];
@@ -371,7 +371,7 @@ function QuineMcCluskeyDataCtrl() {
                 }
 
                 // remove columns
-                var tmpRemaining = new Object();
+                var tmpRemaining = {}
                 for (var e in remaining) {
                     var ee = remaining[e];
                     tmpRemaining[ee] = ee;
@@ -404,16 +404,16 @@ function QuineMcCluskeyDataCtrl() {
         if (cyclicCoveringFound) {
             //console.log("Cyclic covering found");
 
-            var andArray = new Array();
+            var andArray = []
 
             for (var r in remaining) {
                 var ii = remaining[r];
-                var orArray = new Array();
+                var orArray = []
 
                 for (var k = 0; k < primTermTable.remainingPrimTerms.length; k++) {
                     var imp = primTermTable.remainingPrimTerms[k].implicant.imp;
                     if (ii in imp) {
-                        var monom = new Object();
+                        var monom = {}
                         monom[k] = k;
                         orArray.push(monom);
                     }
@@ -520,17 +520,17 @@ function PetrickMethod() {
         var andArray = eq;
         var loopCounter = 0;
         while (andArray.length > 1) {
-            var newAndArray = new Array();
+            var newAndArray = []
             for (var i = 1; i < andArray.length; i += 2) {
 
                 var orTermA = andArray[i - 1];
                 var orTermB = andArray[i];
-                var newOrArray = new Array();
+                var newOrArray = []
                 for (var a = 0; a < orTermA.length; a++) {
                     for (var b = 0; b < orTermB.length; b++) {
                         var monom1 = orTermA[a];
                         var monom2 = orTermB[b];
-                        var resultingMonom = new Object();
+                        var resultingMonom = {}
                         for (var m in monom1) {
                             resultingMonom[monom1[m]] = monom1[m];
                         }
@@ -576,8 +576,8 @@ function PetrickMethod() {
 
     function simplifyOrTerm(orTerm) {
         // find a monom that is the same or simpler than another one
-        var newOrTerm = new Array();
-        var markedForDeletion = new Object();
+        var newOrTerm = []
+        var markedForDeletion = {}
         for (var a = 0; a < orTerm.length; a++) {
             var keepA = true;
             var monomA = orTerm[a];
@@ -683,27 +683,27 @@ function PrimTerm() {
     this.color = [0, 0, 0];
     this.coloredTermString = "";
     this.used = false;
-    this.neededByVar = new Object;
+    this.neededByVar = {}
 }
 
 function Implicant() {
-    this.imp = new Object();
+    this.imp = {}
     this.isPrim = false;
     this.isOnlyDontCare = false;
     this.bitMask = 0;
 }
 
 function ImplicantGroup() {
-    this.group = new Array;
+    this.group = [];
     this.order = -1;
 }
 
 function PrimTermTable(ord) {
-    this.essentialPrimTerms = new Array();
+    this.essentialPrimTerms = []
     this.order = ord;
-    this.remainingVars = new Array();;
-    this.remainingPrimTerms = new Array();
-    this.supersededPrimTerms = new Array();
+    this.remainingVars = []
+    this.remainingPrimTerms = []
+    this.supersededPrimTerms = []
 }
 
 

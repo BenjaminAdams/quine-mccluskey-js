@@ -257,7 +257,7 @@ function removeUnnecessaryParenthesis(str) {
 }
 
 
-let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or kku==999 or eee==223 and (somethig===111 and asdasd==000) and asdasdasd==11111'
-let res = toDnf(inputStr)
+//let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or kku==999 or eee==223 and (somethig===111 and asdasd==000) and asdasdasd==11111'
+//let res = toDnf(inputStr)
 
 module.exports = toDnf
