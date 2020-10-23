@@ -18,3 +18,15 @@ n - Replace relations operators for negation:					`== -> !=
 					!= -> ==
 					⊃⊃ -> !⊃
 					!⊃ -> ⊃⊃
+
+
+
+
+# how to profile code
+```
+node --prof index.js
+```
+then
+```
+node --prof-process isolate-000002A5DAF337E0-38476-v8.log > profile.txt
+```

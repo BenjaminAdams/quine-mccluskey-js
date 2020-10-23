@@ -4,3 +4,4 @@ coverage
 .vscode
 *__pycache__*
 manualTest/problems-*
+isolate-*

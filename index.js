@@ -6,7 +6,6 @@ const DEBUG = process.env.DEBUG === 'true'
 
 
 function toDnf(input) {
-    placeholderIndex = -1
     if (input == null) {
         return ['null']
     } else if (input === '' || input === ' ') {
@@ -91,8 +90,6 @@ function prepareTokens(input) {
     return objTokens
 }
 
-
-
 function findTrueTokens(tokens) {
     let tokenSets = []
     let row = []
@@ -102,8 +99,10 @@ function findTrueTokens(tokens) {
 
     for (let i = 0, iter = new TruthTableIterator(tokens.length); iter.hasNext(); i++) {
         iter.next(tokens);
-        let result = evalTokens(tokens)
+
+        let result = runEval(evalTokens(tokens))
         truthTableResult.push(result === true ? 1 : 0)
+
         // truthTable.push(getValues(tokens, result))
         // tokenSets.push(copyTokens(tokens, result))
     }
@@ -112,13 +111,20 @@ function findTrueTokens(tokens) {
     return truthTableResult
 }
 
+
 function evalTokens(tokens) {
     let evalStatement = ''
     for (let i = 0; i < tokens.length; i++) {
         evalStatement += tokens[i].getEval()
     }
     //console.log(evalStatement, '==', eval(evalStatement))
-    return eval(evalStatement)
+    return evalStatement
+    //return eval(evalStatement)
+}
+
+//moving eval to its own function allows the parent function to optimize better
+function runEval(str) {
+    return eval(str)
 }
 
 function TruthTableIterator(tokensLength) {
@@ -251,7 +257,7 @@ function removeUnnecessaryParenthesis(str) {
 }
 
 
-// let inputStr = 'clly==g8 or comp==abc and asd==123 or fff!=sss and fda⊃⊃ggg or gas!⊃kkf and eee==uuu or jjj!=aaa and ttt⊃⊃sss or kas==kok'
-// let res = toDnf(inputStr)
+let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or kku==999 or eee==223 and (somethig===111 and asdasd==000) and asdasdasd==11111'
+let res = toDnf(inputStr)
 
 module.exports = toDnf

@@ -17,7 +17,7 @@ module.exports = function QuineMcCluskey(tokens, truthTableResult) {
     };
 
     this.setNoOfVars(tokens.length)
-    this.data.init(tokens.length);
+    this.data.init(tokens.length)
     this.data.tokens = tokens
     this.data.setTruthTableResult(truthTableResult)
 
@@ -70,18 +70,18 @@ function QuineMcCluskeyDataCtrl() {
         this.funcdata[i] = val;
     };
 
-    this.activated = function (i) {
-        if (i < 0 || i >= this.funcdata.length)
-            return;
+    // this.activated = function (i) {
+    //     if (i < 0 || i >= this.funcdata.length)
+    //         return;
 
-        this.funcdata[i] += 1;
-        if (this.allowDontCare) {
-            if (this.funcdata[i] > 2) this.funcdata[i] = 0;
-        } else {
-            if (this.funcdata[i] > 1) this.funcdata[i] = 0;
-        }
-        this.compute();
-    };
+    //     this.funcdata[i] += 1;
+    //     if (this.allowDontCare) {
+    //         if (this.funcdata[i] > 2) this.funcdata[i] = 0;
+    //     } else {
+    //         if (this.funcdata[i] > 1) this.funcdata[i] = 0;
+    //     }
+    //     this.compute();
+    // };
 
 
 
