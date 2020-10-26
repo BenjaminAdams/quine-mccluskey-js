@@ -17,9 +17,10 @@ class Token {
         this.lhSideChars = nonExprHolder
         this.rhSideChars = ''
         this.value = true
+        this.valueBit = 1
     }
 
-    getEval() {
+    getEvalPart() {
         return this.lhSideChars + this.getCorrectValue() + this.rhSideChars
     }
 

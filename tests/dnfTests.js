@@ -285,6 +285,19 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 2)
     });
 
+    it('3 NOT variables', async function () {
+        let inputStr = 'asdasd!=555 and ffff!=999 and fasd!=128'
+        let res = toDnf(inputStr)
+        //  assert.ok(res.includes('And(classification.family==g8, hhh==555)'))
+        //  assert.ok(res.includes('component.id==abc'))
+        //  assert.strictEqual(res.length, 2)
+
+        let pythonRes = await callPython(inputStr)
+        // assert.ok(pythonRes.includes('And(classification.family==g8, hhh==555)'))
+        //  assert.ok(pythonRes.includes('component.id==abc'))
+        //  assert.strictEqual(pythonRes.length, 2)
+    });
+
     it('Five (and) conditions', async function () {
         let inputStr = 'xxx==g8 and yyy==abc and ggg==333 and kku==999 and eee==223'
         let res = toDnf(inputStr)

@@ -1,10 +1,9 @@
 
 const DEBUG = process.env.DEBUG === 'true'
 
-//builds a truth table in the format of  [0, 0, 0, 1, 0, 0, 0, 0]
+//builds a truth table/minTerms in the format of  [0, 0, 0, 1, 0, 0, 0, 0]
 module.exports = function findTrueTokens(tokens) {
     let tokenSets = []
-
     let truthTableResult = []
     let truthTable = []
 
@@ -26,7 +25,7 @@ module.exports = function findTrueTokens(tokens) {
 function evalTokens(tokens) {
     let evalStatement = ''
     for (let i = 0; i < tokens.length; i++) {
-        evalStatement += tokens[i].getEval()
+        evalStatement += tokens[i].getEvalPart()
     }
     //console.log(evalStatement, '==', eval(evalStatement))
     return evalStatement
@@ -73,9 +72,9 @@ function getValues(tokens, result) {
     if (!DEBUG) return []
     let values = []
     for (let i = 0; i < tokens.length; i++) {
-        values.push(tokens[i].value)
+        values.push(tokens[i].value === true ? 1 : 0)
     }
-    values.push(result)
+    values.push(result === true ? 1 : 0)
     return values
 }
 
