@@ -5,6 +5,103 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     this.noOfVars = noOfVars;
     this.funcdata = truthTableResult
 
+    this.compute = function () {
+        let start = Date.now()
+        let implicantGroups = this.createImplicantGroups()
+        console.log(`this.createImplicantGroups() took ${Date.now() - start}ms`)
+
+
+        start = Date.now()
+        let primTerms = this.collectPrimterms(implicantGroups)
+        console.log(`this.collectPrimterms() took ${Date.now() - start}ms`)
+
+
+        start = Date.now()
+        let minimalTermPrims = this.collectEssentialPrimterms(primTerms)
+        console.log(`this.collectEssentialPrimterms() took ${Date.now() - start}ms`)
+
+
+        if (minimalTermPrims && minimalTermPrims.length > 0) {
+            return minimalTermPrims.map(x => x.termString);
+        } else {
+            console.error('Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)')
+            return []
+        }
+    }
+
+
+    //very high CPU usage from this function!
+    this.createImplicantGroups = function () {
+        let implicantGroups = []
+        let lastIg = null;
+
+        let firstGroup = this.buildBaseGroup()
+        if (firstGroup.group.length > 0) {
+            implicantGroups.push(firstGroup);
+            lastIg = firstGroup
+        }
+
+        while (lastIg.group.length) {
+            lastIg = this.compareLastGroupToAllOthers(lastIg)
+            if (lastIg.group.length > 0) implicantGroups.push(lastIg);
+        }
+        return implicantGroups
+    }
+
+    this.compareLastGroupToAllOthers = function (lastIg) {
+        let ig = new ImplicantGroup();
+        for (let i = 0; i < lastIg.group.length; i++) {
+            for (let j = i + 1; j < lastIg.group.length; j++) {
+                let imp1 = lastIg.group[i];
+                let imp2 = lastIg.group[j];
+                // console.log(this.howMany++)
+
+                if (imp1.bitMask !== imp2.bitMask) continue;
+
+                let candidates = this.findMergeCandidate(imp1, imp2)
+
+                if (candidates.found) {
+                    imp1.isPrim = false;
+                    imp2.isPrim = false;
+
+                    let impl = new Implicant();
+                    impl.isPrim = true;
+                    impl.bitMask = imp1.bitMask | candidates.xor;
+                    for (let m in imp1.imp)
+                        impl.imp[m] = parseInt(m);
+                    for (let n in imp2.imp)
+                        impl.imp[n] = parseInt(n);
+
+                    impl.calculateHash()
+                    let foundMatch = this.findInGroupMatch(ig.group, impl)
+
+                    if (!foundMatch) {
+                        ig.group.push(impl);
+                    }
+                }
+
+            }
+        }
+        return ig
+    }
+
+    //build one implicant for every (1) from the truth table
+    this.buildBaseGroup = function () {
+        let ig = new ImplicantGroup();
+        for (let i = 0; i < this.funcdata.length; i++) {
+            if (this.funcdata[i] > 0) {
+                let impl = new Implicant();
+                impl.imp[i] = i;
+                impl.isPrim = true;
+                impl.calculateHash()
+                ig.group.push(impl);
+            }
+        }
+        return ig
+    }
+
+
+
 
     function bitCount(value) {
         let counter = 0;
@@ -47,77 +144,8 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 
     this.howMany = 0
 
-    //very high CPU usage from this function!
-    this.createImplicantGroups = function () {
-        let counter = 0;
-        let lastIg = null;
-        let continueLoop = true;
-        let implicantGroups = []
-        while (continueLoop) {
-
-            continueLoop = false;
-            let ig = new ImplicantGroup();
-
-            if (counter === 0) {
-                for (let i = 0; i < this.funcdata.length; i++) {
-                    if (this.funcdata[i] > 0) {
-                        let impl = new Implicant();
-                        impl.imp[i] = i;
-                        impl.isPrim = true;
-                        impl.calculateHash()
-                        ig.group.push(impl);
-                        continueLoop = true;
-                    }
-                }
-            } else {
-                continueLoop = this.compareLastGroup(lastIg, ig)
-            }
-
-            if (continueLoop) implicantGroups.push(ig);
-            lastIg = ig;
-            counter++;
-        }
-        return implicantGroups
-    }
-
-    this.compareLastGroup = function (lastIg, ig) {
-        let continueLoop = false
-        for (let i = 0; i < lastIg.group.length; i++) {
-            for (let j = i + 1; j < lastIg.group.length; j++) {
-                let imp1 = lastIg.group[i];
-                let imp2 = lastIg.group[j];
-                // console.log(this.howMany++)
-
-                if (imp1.bitMask !== imp2.bitMask) continue;
-
-                let candidates = this.findMergeCandidate(imp1, imp2)
-
-                if (candidates.found) {
-                    imp1.isPrim = false;
-                    imp2.isPrim = false;
-
-                    let impl = new Implicant();
-                    impl.isPrim = true;
-                    impl.bitMask = imp1.bitMask | candidates.xor;
-                    for (let m in imp1.imp)
-                        impl.imp[m] = parseInt(m);
-                    for (let n in imp2.imp)
-                        impl.imp[n] = parseInt(n);
-
-                    impl.calculateHash()
-                    let foundMatch = this.findInGroupMatch(ig.group, impl)
-
-                    if (!foundMatch) {
-                        ig.group.push(impl);
-                        continueLoop = true;
-                    }
-                }
-
-            }
-        }
-        return continueLoop
-    }
-
+    //find the essential prime implicants
+    //a group of ones that has at least one minterm and cannot be combined in any other way
     this.collectEssentialPrimterms = function (primTerms) {
         let minimalTermPrims = []
         let primTermTables = []
@@ -272,29 +300,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return minimalTermPrims
     }
 
-    this.compute = function () {
-        let start = Date.now()
-        let implicantGroups = this.createImplicantGroups()
-        console.log(`this.createImplicantGroups() took ${Date.now() - start}ms`)
 
-
-        start = Date.now()
-        let primTerms = this.collectPrimterms(implicantGroups)
-        console.log(`this.collectPrimterms() took ${Date.now() - start}ms`)
-
-
-        start = Date.now()
-        let minimalTermPrims = this.collectEssentialPrimterms(primTerms)
-        console.log(`this.collectEssentialPrimterms() took ${Date.now() - start}ms`)
-
-
-        if (minimalTermPrims && minimalTermPrims.length > 0) {
-            return minimalTermPrims.map(x => x.termString);
-        } else {
-            console.error('Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)')
-            return []
-        }
-    }
 
     this.collectPrimterms = function (implicantGroups) {
         let primTerms = []
@@ -326,7 +332,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                         for (let thisVal in primTerm.implicant.imp) {
                             let minTerm = "";
                             let one = 1;
-                            let needed = (~primTerm.implicant.bitMask);
+                            let needed = ~primTerm.implicant.bitMask; //Bitwise NOT operator
                             for (let v = 0; v < this.noOfVars; v++) {
                                 if ((needed & one) === one) {
                                     if ((thisVal & one) === one) {

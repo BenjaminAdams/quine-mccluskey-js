@@ -4,10 +4,9 @@ const DEBUG = process.env.DEBUG === 'true'
 //builds a truth table in the format of  [0, 0, 0, 1, 0, 0, 0, 0]
 module.exports = function findTrueTokens(tokens) {
     let tokenSets = []
-    let row = []
+
     let truthTableResult = []
     let truthTable = []
-    //truthTable.push(getLetters(tokens))
 
     for (let i = 0, iter = new TruthTableIterator(tokens.length); iter.hasNext(); i++) {
         iter.next(tokens);
@@ -15,11 +14,11 @@ module.exports = function findTrueTokens(tokens) {
         let result = runEval(evalTokens(tokens))
         truthTableResult.push(result === true ? 1 : 0)
 
-        // truthTable.push(getValues(tokens, result))
-        // tokenSets.push(copyTokens(tokens, result))
+        truthTable.push(getValues(tokens, result))
+        tokenSets.push(copyTokens(tokens, result))
     }
 
-    //  printTruthTable(truthTable, tokens)
+    printTruthTable(truthTable, tokens)
     return truthTableResult
 }
 
@@ -60,15 +59,15 @@ function TruthTableIterator(tokensLength) {
 
 
 
-function getLetters(tokens) {
-    if (!DEBUG) return []
-    let letters = []
-    for (let i = 0; i < tokens.length; i++) {
-        letters.push(tokens[i].placeHolder)
-    }
-    letters.push('result')
-    return letters
-}
+// function getLetters(tokens) {
+//     if (!DEBUG) return []
+//     let letters = []
+//     for (let i = 0; i < tokens.length; i++) {
+//         letters.push(tokens[i].placeHolder)
+//     }
+//     letters.push('result')
+//     return letters
+// }
 
 function getValues(tokens, result) {
     if (!DEBUG) return []

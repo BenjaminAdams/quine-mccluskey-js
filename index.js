@@ -24,7 +24,7 @@ function toDnf(input) {
 
         start = Date.now()
         let truthTableResult = truthTableBuilder(tokens)
-        console.log(` truthTableBuilder() ${Date.now() - start}ms`)
+        console.log(`truthTableBuilder() ${Date.now() - start}ms`)
 
         let qmc = new QuineMcCluskey(tokens.length, truthTableResult);
         let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))

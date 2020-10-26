@@ -13,7 +13,7 @@ async function speedTest() {
         // let res = await callPython(inputStr)
         let res = toDnf(inputStr)
         console.log(`${i + 1} variables took ${Date.now() - start}ms`)
-
+        console.log()
     }
 }
 
