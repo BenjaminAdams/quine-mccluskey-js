@@ -1,7 +1,7 @@
 const DEBUG = process.env.DEBUG === 'true'
-const expressionSplitRegex = /(==|!=|⊃⊃|!⊃)/g
-const positiveSymbols = ['==', '⊃⊃']
-const negatedSymbols = ['!=', '!⊃']
+const expressionSplitRegex = /(==|!=|⊃⊃|!⊃|>=|<=|>|<)/g
+const positiveSymbols = ['==', '⊃⊃', '>', '>=']
+const negatedSymbols = ['!=', '!⊃', '<', '<=']
 
 class Token {
     constructor(token, nonExprHolder) {
@@ -92,6 +92,14 @@ class Token {
                 return '!⊃'
             case '!⊃':
                 return '⊃⊃'
+            case '>':
+                return '<'
+            case '<':
+                return '>'
+            case '>=':
+                return '<='
+            case '<=':
+                return '>='
             default:
                 throw 'Unknown symbol: ' + symbol
         }

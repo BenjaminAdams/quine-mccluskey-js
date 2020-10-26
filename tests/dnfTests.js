@@ -234,6 +234,46 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
+    it('expression with > and <', async function () {
+        let inputStr = 'component.id>abc and component.id<xxx'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('And(component.id>abc, component.id<xxx)'))
+        assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('And(component.id>abc, component.id<xxx)'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
+    it('expression with => and <=', async function () {
+        let inputStr = 'component.id>=abc or component.id<=xxx and asdasdasd>777'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('component.id>=abc'))
+        assert.ok(res.includes('And(component.id<=xxx, asdasdasd>777)'))
+        assert.strictEqual(res.length, 2)
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('component.id>=abc'))
+        assert.ok(pythonRes.includes('And(component.id<=xxx, asdasdasd>777)'))
+        assert.strictEqual(pythonRes.length, 2)
+    });
+
+    it('five conditions with ==, >, >=, <=, < ', async function () {
+        let inputStr = 'asd==555 or ggg>15 and yyy<4444 and jjj>=111 or rrr<=999'
+        let res = toDnf(inputStr)
+        assert.ok(res.includes('rrr<=999'))
+        assert.ok(res.includes('And(ggg>15, yyy<4444, jjj>=111)'))
+        assert.ok(res.includes('asd==555'))
+        assert.strictEqual(res.length, 3)
+
+
+        let pythonRes = await callPython(inputStr)
+        assert.ok(pythonRes.includes('rrr<=999'))
+        assert.ok(pythonRes.includes('And(ggg>15, yyy<4444, jjj>=111)'))
+        assert.ok(pythonRes.includes('asd==555'))
+        assert.strictEqual(pythonRes.length, 3)
+    });
+
     it('Two conditions (and)', async function () {
         let inputStr = 'classification.family==g8 and component.id==abc'
         let res = toDnf(inputStr)
