@@ -18,7 +18,7 @@ async function callPython(inputStr) {
             });
 
             pythonProcess.stderr.on('data', function (data) {
-                console.error('python result=', data.toString())
+                // console.error('python result=', data.toString())
                 reject(data.toString())
             });
 

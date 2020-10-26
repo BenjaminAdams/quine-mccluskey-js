@@ -332,6 +332,18 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
+    it('Eight (or) conditions', async function () {
+        let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or kku==999 or eee==223 or lfx==g8 or fyy==abc or hqe==981'
+        let res = toDnf(inputStr)
+        // assert.ok(res.includes('classification.family==g8'))
+        // assert.ok(res.includes('component.id==abc'))
+        // assert.strictEqual(res.length, 2)
+
+        let pythonRes = await callPython(inputStr)
+        // assert.strictEqual(pythonRes[0], 'Or(classification.family==g8, component.id==abc)')
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
 
     it('Two conditions (and) with crazy, but correct syntax', async function () {
         let inputStr = '(((classification.family==g8)) or ((component.id==abc)))'

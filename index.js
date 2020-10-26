@@ -18,9 +18,14 @@ function toDnf(input) {
     }
 
     try {
-
+        let start = Date.now()
         let tokens = prepareTokens(input)
+        console.log(`prepareTokens() ${Date.now() - start}ms`)
+
+        start = Date.now()
         let truthTableResult = truthTableBuilder(tokens)
+        console.log(` truthTableBuilder() ${Date.now() - start}ms`)
+
         let qmc = new QuineMcCluskey(tokens.length, truthTableResult);
         let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))
         return qmcResult

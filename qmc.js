@@ -4,8 +4,7 @@ var _ = require('lodash');
 module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     this.noOfVars = noOfVars;
     this.funcdata = truthTableResult
-    this.minimalTermPrims = []
-    this.primTermTables = []
+
 
     function bitCount(value) {
         let counter = 0;
@@ -119,14 +118,9 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         return continueLoop
     }
 
-    this.compute = function () {
-        this.minimalTerm = "0";
-
-        let implicantGroups = this.createImplicantGroups()
-
-        // collect primterms
-        let primTerms = this.collectPrimterms(implicantGroups)
-
+    this.collectEssentialPrimterms = function (primTerms) {
+        let minimalTermPrims = []
+        let primTermTables = []
         // looking for essential prime implicants 
         let remaining = {}
         for (let i = 0; i < this.funcdata.length; i++) {
@@ -155,7 +149,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                 }
             } else {
                 // remove rows
-                let prevTable = this.primTermTables[primTableLoop - 1];
+                let prevTable = primTermTables[primTableLoop - 1];
                 for (let k = 0; k < prevTable.remainingPrimTerms.length; k++) {
                     if (!prevTable.remainingPrimTerms[k].used) {
 
@@ -212,7 +206,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 
             let remainingCount = 0;
             if (primTermTable.remainingPrimTerms.length > 0) {
-                this.primTermTables.push(primTermTable);
+                primTermTables.push(primTermTable);
                 let currentTerms = primTermTable.remainingPrimTerms;
 
                 let toBeRemoved = {}
@@ -231,7 +225,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                     if (count === 1) {
                         currentTerms[term].neededByVar[i] = primTableLoop;
                         if (!currentTerms[term].used) {
-                            this.minimalTermPrims.push(currentTerms[term]);
+                            minimalTermPrims.push(currentTerms[term]);
                             currentTerms[term].used = true;
                             primTermTable.essentialPrimTerms.push(currentTerms[term]);
                             primTableFound = true;
@@ -275,12 +269,27 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 
             primTableLoop++;
         }
+        return minimalTermPrims
+    }
 
-        let solutionFound = true;
+    this.compute = function () {
+        let start = Date.now()
+        let implicantGroups = this.createImplicantGroups()
+        console.log(`this.createImplicantGroups() took ${Date.now() - start}ms`)
 
 
-        if (solutionFound) {
-            return this.minimalTermPrims.map(x => x.termString);
+        start = Date.now()
+        let primTerms = this.collectPrimterms(implicantGroups)
+        console.log(`this.collectPrimterms() took ${Date.now() - start}ms`)
+
+
+        start = Date.now()
+        let minimalTermPrims = this.collectEssentialPrimterms(primTerms)
+        console.log(`this.collectEssentialPrimterms() took ${Date.now() - start}ms`)
+
+
+        if (minimalTermPrims && minimalTermPrims.length > 0) {
+            return minimalTermPrims.map(x => x.termString);
         } else {
             console.error('Error: The cyclic covering problem is too large (increase the "maxProblemSize" parameter)')
             return []
