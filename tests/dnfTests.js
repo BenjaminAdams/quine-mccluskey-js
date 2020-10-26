@@ -196,33 +196,6 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
-    it('value contains a /', async function () {
-        let inputStr = '(Component.id==gscx3rp or Component.id==ggw894q) and Classification.id==p4/b1220/1516'
-        let res = toDnf(inputStr)
-        assert.ok(res.includes('And(Component.id==ggw894q, Classification.id==p4/b1220/1516)'))
-        assert.ok(res.includes('And(Component.id==gscx3rp, Classification.id==p4/b1220/1516)'))
-        assert.strictEqual(res.length, 2)
-
-        let pythonRes = await callPython(inputStr)
-        assert.ok(pythonRes.includes('And(Component.id==ggw894q, Classification.id==p4/b1220/1516)'))
-        assert.ok(pythonRes.includes('And(Component.id==gscx3rp, Classification.id==p4/b1220/1516)'))
-        assert.strictEqual(pythonRes.length, 2)
-    });
-
-    it('same formula as above but without a /', async function () {
-        let inputStr = '(Component.id==gscx3rp or Component.id==ggw894q) and Classification.id==555'
-        let res = toDnf(inputStr)
-        assert.ok(res.includes('And(Component.id==ggw894q, Classification.id==555)'))
-        assert.ok(res.includes('And(Component.id==gscx3rp, Classification.id==555)'))
-        assert.strictEqual(res.length, 2)
-
-        let pythonRes = await callPython(inputStr)
-        assert.ok(pythonRes.includes('And(Component.id==ggw894q, Classification.id==555)'))
-        assert.ok(pythonRes.includes('And(Component.id==gscx3rp, Classification.id==555)'))
-        assert.strictEqual(pythonRes.length, 2)
-    });
-
-
     it('expression with ⊃⊃ and !⊃', async function () {
         let inputStr = 'component.id⊃⊃abc and component.id!⊃xxx'
         let res = toDnf(inputStr)
