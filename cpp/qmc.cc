@@ -1,8 +1,13 @@
 #include <nan.h>
+#include <node.h>
+#include <node_buffer.h>
 #include <string>
 #include <vector>
 #include "implicant.h"
 #include "qm.h"
+
+using namespace std;
+using namespace v8;
 
 void GetBooleanExpression(const Nan::FunctionCallbackInfo<v8::Value> &info)
 {
@@ -10,9 +15,13 @@ void GetBooleanExpression(const Nan::FunctionCallbackInfo<v8::Value> &info)
 
     //double arg0 = info[0]->NumberValue(context).FromJust();
 
-    Local<Float32Array> myarr = info[0].As<Float32Array>();
-    Nan::TypedArrayContents<float> dest(myarr);
-    std::string firstElement = (*myarr)[0];
+    // Local<Float32Array> myarr = info[0].As<Float32Array>();
+    // Nan::TypedArrayContents<float> dest(myarr);
+    // std::string firstElement = (*myarr)[0];
+    //v8::String::Utf8Value strxx(info[0]->ToString());
+    //
+    // Array aaaa = info[0].As<Array>;
+    char *buf = node::Buffer::Data(info[0]);
 
     int arr[] = {10, 20, 30};
     int n = sizeof(arr) / sizeof(arr[0]);
@@ -43,7 +52,7 @@ void GetBooleanExpression(const Nan::FunctionCallbackInfo<v8::Value> &info)
 
     // Get the boolean expression
     std::string expression = getBooleanExpression(solution);
-    // expression = expression.append(firstElement);
+    // expression = expression.append(strxx);
     info.GetReturnValue().Set(Nan::New(expression).ToLocalChecked());
 }
 

@@ -18,9 +18,9 @@ module.exports = function findTrueTokens(tokens) {
     }
 
     //printTruthTable(truthTable, tokens)
-   // return truthTableResult
-   //return truthTable
-   return getTruthTableArray(truthTable)
+    return truthTableResult
+    //return truthTable
+    //return getTruthTableArray(truthTable)
 }
 
 
@@ -66,7 +66,7 @@ function getVariableNames(tokens) {
     for (let i = 0; i < tokens.length; i++) {
         letters.push(tokens[i].id)
     }
-   // letters.push('result')
+    // letters.push('result')
     return letters
 }
 
@@ -81,9 +81,9 @@ function getValues(tokens, result) {
 }
 
 function getTruthTableArray(truthTable) {
-    let tTable= []
+    let tTable = []
     for (let i = 0; i < truthTable.length; i++) {
-        tTable.push(truthTable[i].join(''))         
+        tTable.push(truthTable[i].join(''))
     }
     return tTable
 }
@@ -92,12 +92,12 @@ function printTruthTable(truthTable, tokens) {
     if (!DEBUG) return
 
     let minTerms = ''
-    let variableNames= getVariableNames(tokens)
-    let str=`${variableNames.length} ${variableNames.join(' ')} ${truthTable.length}\r\n`
+    let variableNames = getVariableNames(tokens)
+    let str = `${variableNames.length} ${variableNames.join(' ')} ${truthTable.length}\r\n`
     for (let i = 0; i < truthTable.length; i++) {
-        str+= `${truthTable[i].join(' ')}\r\n`
+        str += `${truthTable[i].join(' ')}\r\n`
         //if(truthTable[i][truthTable[i].length-1] ==1 ) minTerms+= `${i},`
-           
+
     }
     writeTruthTableFile(str)
     console.table(truthTable)
@@ -106,7 +106,7 @@ function printTruthTable(truthTable, tokens) {
 function writeTruthTableFile(str) {
 
     fs.writeFileSync('truthTable.txt', str, {
-       // flag: 'a+'
+        // flag: 'a+'
     });
 }
 

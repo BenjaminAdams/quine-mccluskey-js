@@ -3,16 +3,46 @@ const assert = require('assert');
 const fs = require('fs');
 const callPython = require('./python/callPython.js')
 const toDnf = require('../index.js')
+const childProcess = require('child_process');
 
 //("a+(b'(c+d))") 
 //a OR ( !b AND (c OR d))
-
-
-
 //Component.id==683-23437 and Classification.id==baseitem_apjc_ps9000_48671
+
+
+require('events').EventEmitter.defaultMaxListeners = 150;
+
+function spawnInstance() {
+    const child = childProcess.spawn('bash');
+    return (command) => {
+        return new Promise((resolve, reject) => {
+            child.stdout.once('data', (data) => resolve(resolve(JSON.parse(data.toString()
+                .replace('\r\n', '')
+                .replace(/\u2283/g, '⊃')
+                .replace(/'/g, '"')))));
+            child.stderr.once('data', (data) => reject(data.toString()));
+            child.stdin.write(`${command}\n`);
+        });
+    };
+}
 
 describe('toDnf', function () {
     this.timeout(50000)
+
+    it('call python over and over', async function () {
+        let py = spawnInstance()
+        let inputStr = 'Compandonent.id==723-bbor and Classiorfication.id==f_1and4641'
+        for (let i = 0; i < 2650; i++) {
+            let start = Date.now()
+            let pythonRes = await py(`python3 tests/python/runExpr.py "${inputStr}"`)
+            //let pythonRes = await callPython(inputStr)
+            assert.ok(pythonRes.includes('And(Compandonent.id==723-bbor, Classiorfication.id==f_1and4641)'))
+            assert.strictEqual(pythonRes.length, 1)
+            console.log(`python took ${Date.now() - start}ms`)
+        }
+
+    });
+
 
     it('invalid input, echos input', async function () {
         let inputStr = 'x=5' //not enough chars, it needs to be x==5

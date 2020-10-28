@@ -3,6 +3,7 @@ const spawn = require("child_process").spawn
 async function callPython(inputStr) {
     try {
         const pythonProcess = spawn('py', ["tests/python/runExpr.py", inputStr]);
+
         return new Promise((resolve, reject) => {
 
             pythonProcess.stdout.on('data', function (data) {
