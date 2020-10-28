@@ -2,7 +2,10 @@
   "targets": [
     {
       "target_name": "qmc",
-      "sources": [ "cpp/qmc.cc", "cpp/implicant.h", "cpp/implicant.cpp", "cpp/qm.h" , "cpp/qm.cpp"  ]
+      "sources": [ "cpp/qmc.cc", "cpp/implicant.h", "cpp/implicant.cpp", "cpp/qm.h" , "cpp/qm.cpp"],
+      "include_dirs" : [
+        "<!(node -e \"require('nan')\")"
+      ]
     }
   ]
 

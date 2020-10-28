@@ -3,9 +3,10 @@ const Token = require('./token.js')
 const QuineMcCluskey = require('./qmc.js')
 const truthTableBuilder = require('./truthTable.js')
 
-const qmcBuilder= require('./build/Release/qmc')
 
-var asdaaaa= qmcBuilder.getBooleanExpression()
+const qmcBuilder = require('./build/Release/qmc')
+
+
 
 const firstSplitRegex = /\s(and|or|AND|OR)\s|(\(|\))/g
 
@@ -30,9 +31,13 @@ function toDnf(input) {
         let truthTableResult = truthTableBuilder(tokens)
         console.log(`truthTableBuilder() ${Date.now() - start}ms`)
 
-        let qmc = new QuineMcCluskey(tokens.length, truthTableResult);
-        let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))
-        return qmcResult
+        //let qmc = new QuineMcCluskey(tokens.length, truthTableResult);
+        //let qmcResult = qmc.map(x => qmcBackToAnds(tokens, x))
+        //return qmcResult
+        //var asdaaaa= qmcBuilder.getBooleanExpression(truthTableResult)
+        var asdaaaa = qmcBuilder.getBooleanExpression(...truthTableResult)
+        return null
+
 
     } catch (ex) {
         console.error('exception in toDnf ', ex)
