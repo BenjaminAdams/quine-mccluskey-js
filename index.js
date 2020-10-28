@@ -1,10 +1,14 @@
-
+const DEBUG = process.env.DEBUG === 'true'
 const Token = require('./token.js')
 const QuineMcCluskey = require('./qmc.js')
 const truthTableBuilder = require('./truthTable.js')
 
+const qmcBuilder= require('./build/Release/qmc')
+
+var asdaaaa= qmcBuilder.getBooleanExpression()
+
 const firstSplitRegex = /\s(and|or|AND|OR)\s|(\(|\))/g
-const DEBUG = process.env.DEBUG === 'true'
+
 
 
 function toDnf(input) {

@@ -5,3 +5,4 @@ coverage
 *__pycache__*
 manualTest/problems-*
 isolate-*
+build

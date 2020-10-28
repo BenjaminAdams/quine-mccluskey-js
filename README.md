@@ -4,6 +4,7 @@ https://github.com/IvanRave/logic-tree
 http://booleanbot.com/  uses this syntax a+(b'(c+d))
 https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/normalform/index.html //does not simplify
 https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/karnaughmap/  //perfect
+https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/qmc/index.html
 Quine-McCluskey
 https://www.dcode.fr/boolean-expressions-calculator  //pretty good
 
@@ -28,5 +29,5 @@ node --prof index.js
 ```
 then
 ```
-node --prof-process isolate-0000029FCC6DFBF0-226876-v8.log > profile.txt
+node --prof-process isolate-00000212A1CADC90-269796-v8.log > profile.txt
 ```

@@ -1,4 +1,4 @@
-
+const fs = require('fs');
 const DEBUG = process.env.DEBUG === 'true'
 
 //builds a truth table/minTerms in the format of  [0, 0, 0, 1, 0, 0, 0, 0]
@@ -58,15 +58,15 @@ function TruthTableIterator(tokensLength) {
 
 
 
-// function getLetters(tokens) {
-//     if (!DEBUG) return []
-//     let letters = []
-//     for (let i = 0; i < tokens.length; i++) {
-//         letters.push(tokens[i].placeHolder)
-//     }
-//     letters.push('result')
-//     return letters
-// }
+function getVariableNames(tokens) {
+    if (!DEBUG) return []
+    let letters = []
+    for (let i = 0; i < tokens.length; i++) {
+        letters.push(tokens[i].id)
+    }
+   // letters.push('result')
+    return letters
+}
 
 function getValues(tokens, result) {
     if (!DEBUG) return []
@@ -78,9 +78,26 @@ function getValues(tokens, result) {
     return values
 }
 
-function printTruthTable(truthTable) {
+function printTruthTable(truthTable, tokens) {
     if (!DEBUG) return
+
+    let minTerms = ''
+    let variableNames= getVariableNames(tokens)
+    let str=`${variableNames.length} ${variableNames.join(' ')} ${truthTable.length}\r\n`
+    for (let i = 0; i < truthTable.length; i++) {
+        str+= `${truthTable[i].join(' ')}\r\n`
+        if(truthTable[i][truthTable[i].length-1] ==1 )
+            minTerms+= `${i},`
+    }
+    writeTruthTableFile(str)
     console.table(truthTable)
+}
+
+function writeTruthTableFile(str) {
+
+    fs.writeFileSync('truthTable.txt', str, {
+       // flag: 'a+'
+    });
 }
 
 

@@ -1,5 +1,5 @@
 //Quine–McCluskey algorithm
-var _ = require('lodash');
+
 
 module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     this.noOfVars = noOfVars;
@@ -42,6 +42,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
         }
 
         while (lastIg.group.length) {
+            // console.log(lastIg.group.map(x => x.hash))
             lastIg = this.compareLastGroupToAllOthers(lastIg)
             if (lastIg.group.length > 0) implicantGroups.push(lastIg);
         }
@@ -66,6 +67,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
 
                     let impl = new Implicant();
                     impl.isPrim = true;
+                    //a single `|` is a Bitwise OR
                     impl.bitMask = imp1.bitMask | candidates.xor;
                     for (let m in imp1.imp)
                         impl.imp[m] = parseInt(m);
@@ -73,9 +75,9 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                         impl.imp[n] = parseInt(n);
 
                     impl.calculateHash()
-                    let foundMatch = this.findInGroupMatch(ig.group, impl)
-
-                    if (!foundMatch) {
+                    // let foundMatch = this.findInGroupMatch(ig.group, impl)
+                    if (!ig.groupSet.has(impl.hash)) {
+                        ig.groupSet.add(impl.hash)
                         ig.group.push(impl);
                     }
                 }
@@ -95,6 +97,7 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                 impl.isPrim = true;
                 impl.calculateHash()
                 ig.group.push(impl);
+                ig.groupSet.add(impl.hash)
             }
         }
         return ig
@@ -119,9 +122,11 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
                 let i1 = imp1.imp[m];
                 let i2 = imp2.imp[n];
                 //console.log(i1 + "<->" + i2);
+                //^ is Bitwise XOR
+                //~ is Bitwise NOT operator
                 xor = (i1 ^ i2) & (~imp1.bitMask);
                 if (bitCount(xor) === 1) {
-                    // console.log("found merge candidate" + i1 + "<->" + i2);
+                    //console.log("found merge candidate" + i1 + "<->" + i2);
                     return { found: true, xor: xor }
                 }
                 break;
@@ -134,7 +139,9 @@ module.exports = function QuineMcCluskey(noOfVars, truthTableResult) {
     //97% of CPU time is spent here in findInGroupMatch() and createImplicantGroups
     // determine if this combination of implicants is already in the group
     this.findInGroupMatch = function (group, impl) {
-        let res = _.findIndex(group, function (existing) {
+        if (group.length === 0) return false
+
+        let res = group.findIndex(function (existing) {
             return existing.hash === impl.hash
             //console.log(self.findInGroupMatchWasCalled++)
             //  return _.isEqual(impl.imp, existing.imp)
@@ -393,6 +400,7 @@ function Implicant() {
 
 function ImplicantGroup() {
     this.group = [];
+    this.groupSet = new Set()
     this.order = -1;
 }
 
