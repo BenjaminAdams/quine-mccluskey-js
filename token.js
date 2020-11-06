@@ -8,7 +8,7 @@ class Token {
         let split = token.split(expressionSplitRegex)
 
         this.left = split[0] || ''
-        //this.placeHolder = currentPlaceholder
+        this.id = null //this gets assigned after we know how many tokens we have
         this.symbol = split[1] || ''
         this.positiveSymbol = this.getPositiveSymbol(this.symbol)
         this.negatedSymbol = this.getNegativeSymbol(this.symbol)

@@ -5,7 +5,6 @@ const QuineMcCluskey = require('./qmc.js')
 const truthTableBuilder = require('./truthTable.js')
 
 
-//const qmcBuilder = require('./build/Release/qmc')
 
 function toDnf(input) {
     if (input == null) {

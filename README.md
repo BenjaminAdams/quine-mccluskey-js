@@ -1,11 +1,11 @@
 # boolean-expression-tree-evaluator
+Quine-McCluskey
 
 https://github.com/IvanRave/logic-tree
 http://booleanbot.com/  uses this syntax a+(b'(c+d))
 https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/normalform/index.html //does not simplify
 https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/karnaughmap/  //perfect
 https://www.mathematik.uni-marburg.de/~thormae/lectures/ti1/code/qmc/index.html
-Quine-McCluskey
 https://www.dcode.fr/boolean-expressions-calculator  //pretty good
 
 1 - split by OR, AND, (, ) -> get array of values					
@@ -20,14 +20,3 @@ n - Replace relations operators for negation:					`== -> !=
 					⊃⊃ -> !⊃
 					!⊃ -> ⊃⊃
 
-
-
-
-# how to profile code
-```
-node --prof index.js
-```
-then
-```
-node --prof-process isolate-00000212A1CADC90-269796-v8.log > profile.txt
-```

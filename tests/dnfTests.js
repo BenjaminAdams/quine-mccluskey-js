@@ -175,6 +175,19 @@ describe('toDnf', function () {
         assert.strictEqual(pythonRes.length, 1)
     });
 
+    it('very complex input', async function () {
+        let inputStr = 'component.id==abc or amzn==4g323f or (asdasd==444 and (fff==111 or (aasdsad==99 or qqq==111) and spy==420) or vug==400) and voo==356 or (oot==444 or (xxy==111 and (zzz==99 and www==111) or spyxx==420) and vugxx==400)'
+        let res = toDnf(inputStr)
+        //assert.ok(res.includes('component.id==abc'))
+        //assert.strictEqual(res.length, 1)
+
+        let pythonRes = await callPython(inputStr)
+    //    assert.ok(pythonRes.includes('component.id==abc'))
+        assert.strictEqual(pythonRes.length, 1)
+    });
+
+    
+
 
     it('weird spacing/outside parenthesis issue around expr', async function () {
         let inputStr = '( Item.id==fTestBasha )'
@@ -388,7 +401,7 @@ describe('toDnf', function () {
     });
 
     it('9 (or/and) conditions', async function () {
-        let inputStr = 'xxx==g8 or yyy==abc or ggg==333 or aasss==444 and kku==999 or eee==223 and ddead==9281 or lfx==g8 or fyy==abc'
+        let inputStr = 'asdasd!=dddd or asdjeahdasd==8888 or asdasdasdd==1111 or asdjuwiqjs==9999 and xxx==g8 or yyy==abc or ggg==333 or aasss==444 and kku==999 or eee==223 and ddead==9281 or lfx==g8 or fyy==abc'
         let res = toDnf(inputStr)
         // assert.ok(res.includes('classification.family==g8'))
         // assert.ok(res.includes('component.id==abc'))
