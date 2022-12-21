@@ -1,5 +1,5 @@
 # boolean-expression-tree-evaluator
-Quine-McCluskey
+Quine-McCluskey in JavaScript
 
 https://github.com/IvanRave/logic-tree
 http://booleanbot.com/  uses this syntax a+(b'(c+d))
